@@ -1,0 +1,2 @@
+讀取SFX的PISSN EISSN 比對若有找到相同ISSN
+就回傳該筆資料index(從0開始)

@@ -1,0 +1,17 @@
+用以擷取年卷期區間
+Input:
+Available in 2010. Most recent 1 year(s) 6 month(s) not available. 
+
+Available in 2003 volume: 50 issue: 1. Available from 2004 volume: 51 issue: 2 until 2009 volume: 56 issue: 1. Available in 2013 volume: 60 issue: 1. 
+
+ 
+
+Ouput:
+
+●Year.Volume.Issue 
+●"0"代表沒有沒有給值
+●AyBm近幾年幾月無法瀏覽
+
+['2010.0.0', '1y6m']
+
+['2003.50.1', '2004.51.2 - 2009.56.1', '2013.60.1']
