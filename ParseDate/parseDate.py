@@ -1,7 +1,6 @@
 import re
 import time
 
-
 """處理給予的檔案或是字串，回傳結構化的區間資料(input string) 或輸出成result.txt(input file)"""
 
 
@@ -57,6 +56,8 @@ def extractInterval(string="", filename=""):
             retStr += ' '
         rel.write('\n')
         return retStr
+
+
 """用來處理年卷期的功能"""
 
 
@@ -101,8 +102,9 @@ def parseYVI(cell):
             parsedCell += "."
             parsedCell += "9999"
     elif cell.find('from') is not -1:
-            parsedCell += "-9999.9999.9999"
+        parsedCell += "-9999.9999.9999"
     return parsedCell
+
 
 """擷取近幾年幾個月不能瀏覽"""
 
@@ -122,7 +124,8 @@ def parseRecent(parsedData, cell):
         month = int(parsedCell)
 
     recent = int(time.strftime("%Y")) - year - int((month / 12))
-    # print(recent)
+    if month % 12 and int(time.strftime("%m")) - (month % 12) < 0:
+        recent -= 1
     return str(recent)
 
 
