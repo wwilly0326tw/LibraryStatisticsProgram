@@ -39,7 +39,7 @@ def extractInterval(string="", filename=""):
     elif string:
         """處理 parseDate 字串"""
         # logger.debug('Parsing : ' + string)
-        print ('Parsing : ' + string)
+        # print ('Parsing : ' + string)
         parsedData = []
         for cell in re.split('\. ', string):
             if cell.find('Available') is not -1:
@@ -55,7 +55,7 @@ def extractInterval(string="", filename=""):
                 """如果語句中只有 Most recent 那麼就直接將起點算成0.0.0 終點是 recent的時間"""
                 if rowIndex == len(parsedData):
                     parsedData.append('0.0.0-' + recent + '.9999.9999')
-        print(parsedData)
+        # print(parsedData)
         retStr = ""
         for str in parsedData:
             rel.write(str)
@@ -145,17 +145,20 @@ if __name__ == '__main__':
         conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
                                        host=DBconfig.host)
         cur = conn.cursor()
-        cur.execute("SELECT id, Threshold FROM sfx order by Threshold desc limit 10000")
+        cur.execute("SELECT id, Threshold FROM sfx where Threshold is not  null order by Threshold desc")
         result = cur.fetchall()
     except Exception as err:
         logger.error(err)
         sys.exit(-1)
 
     for row in result:
-        # print (extractInterval(row[1]))
+        # 已處理過的字串直接跳過
+        if re.match('.*[0-9]+\.[0-9]+\.[0-9]+.*', row[1]):
+            # print ("pass")
+            continue
         try:
             cur.execute("UPDATE sfx SET Threshold = '" + extractInterval(row[1]) + "' WHERE id = " + str(row[0]))
-            # conn.commit()
+            conn.commit()
         except Exception as err:
             conn.rollback()
             logger.error(err)
