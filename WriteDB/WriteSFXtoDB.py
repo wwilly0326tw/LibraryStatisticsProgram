@@ -1,8 +1,8 @@
 from openpyxl import load_workbook
+from .. import DBconfig
 import mysql.connector
 import logging
 import logging.config
-
 
 
 def writeSFX2DB(filename=""):
@@ -14,7 +14,8 @@ def writeSFX2DB(filename=""):
     logger = logging.getLogger("root")
 
     try:
-        conn = mysql.connector.connect(user='user', password='zxc105', database='librarystatisticsdata', host='localhost')
+        conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
+                                       host=DBconfig.host)
         cur = conn.cursor()
     except Exception as err:
         logger.error(err)

@@ -1,5 +1,10 @@
 import re
+import sys
 import time
+import mysql.connector
+import logging
+import logging.config
+from .. import DBconfig
 
 """處理給予的檔案或是字串，回傳結構化的區間資料(input string) 或輸出成result.txt(input file)"""
 
@@ -130,4 +135,13 @@ def parseRecent(parsedData, cell):
 
 
 if __name__ == '__main__':
-    print(extractInterval(filename='testdata.txt'))
+    logging.config.fileConfig("../logger.conf")
+    logger = logging.getLogger("root")
+
+    try:
+        conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
+                                       host=DBconfig.host)
+        cur = conn.cursor()
+    except Exception as err:
+        logger.error(err)
+        sys.exit(-1)
