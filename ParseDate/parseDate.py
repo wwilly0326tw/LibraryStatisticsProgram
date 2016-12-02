@@ -38,10 +38,10 @@ def extractInterval(string="", filename=""):
             rel.write('\n')
     elif string:
         """處理 parseDate 字串"""
+        # logger.debug('Parsing : ' + string)
+        print ('Parsing : ' + string)
         parsedData = []
-        # print(string)
         for cell in re.split('\. ', string):
-            # print(cell)
             if cell.find('Available') is not -1:
                 parsedData.append(parseYVI(cell))
             if cell.find('Most') is not -1:
@@ -52,7 +52,10 @@ def extractInterval(string="", filename=""):
                         parsedData[rowIndex] = row[0: row.find('-') + 1] + recent + row[row.find('-') + 5: len(row)]
                         break
                     rowIndex += 1
-        # print(parsedData)
+                """如果語句中只有 Most recent 那麼就直接將起點算成0.0.0 終點是 recent的時間"""
+                if rowIndex == len(parsedData):
+                    parsedData.append('0.0.0-' + recent + '.9999.9999')
+        print(parsedData)
         retStr = ""
         for str in parsedData:
             rel.write(str)
@@ -61,9 +64,6 @@ def extractInterval(string="", filename=""):
             retStr += ' '
         rel.write('\n')
         return retStr
-
-
-"""用來處理年卷期的功能"""
 
 
 def parseYVI(cell):
@@ -88,7 +88,7 @@ def parseYVI(cell):
             parsedCell += "0"
 
     end = cell.find('until')
-    if end is not -1:
+    if end is not -1 and cell.find('from') is not -1:
         parsedCell += "-"
         parsedCell += cell[end + 6: end + 10]
         pos = cell.find('volume', end)
@@ -101,15 +101,18 @@ def parseYVI(cell):
         pos = cell.find('issue', end)
         if pos is not -1:
             parsedCell += "."
-            print(cell[pos + 6])
             parsedCell += cell[pos + 7: len(cell) - 1]
         else:
             parsedCell += "."
             parsedCell += "9999"
     elif cell.find('from') is not -1:
         parsedCell += "-9999.9999.9999"
+    elif cell.find('until') is not -1:  # 如果只有until語句的話,需要將cell改成0.0.0-前面parse出來的結果
+        parsedCell = "0.0.0-" + parsedCell
     return parsedCell
 
+
+"""用來處理年卷期的功能"""
 
 """擷取近幾年幾個月不能瀏覽"""
 
@@ -142,12 +145,18 @@ if __name__ == '__main__':
         conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
                                        host=DBconfig.host)
         cur = conn.cursor()
-        cur.execute("SELECT id, Threshold FROM sfx order by Threshold desc limit 10")
+        cur.execute("SELECT id, Threshold FROM sfx order by Threshold desc limit 10000")
         result = cur.fetchall()
     except Exception as err:
         logger.error(err)
         sys.exit(-1)
 
     for row in result:
-        print (row)
-
+        # print (extractInterval(row[1]))
+        try:
+            cur.execute("UPDATE sfx SET Threshold = '" + extractInterval(row[1]) + "' WHERE id = " + str(row[0]))
+            # conn.commit()
+        except Exception as err:
+            conn.rollback()
+            logger.error(err)
+            continue
