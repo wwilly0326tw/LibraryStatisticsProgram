@@ -4,7 +4,7 @@ import time
 import mysql.connector
 import logging
 import logging.config
-from .. import DBconfig
+import Program.DBconfig as DBconfig
 
 """處理給予的檔案或是字串，回傳結構化的區間資料(input string) 或輸出成result.txt(input file)"""
 
@@ -142,6 +142,12 @@ if __name__ == '__main__':
         conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
                                        host=DBconfig.host)
         cur = conn.cursor()
+        cur.execute("SELECT id, Threshold FROM sfx order by Threshold desc limit 10")
+        result = cur.fetchall()
     except Exception as err:
         logger.error(err)
         sys.exit(-1)
+
+    for row in result:
+        print (row)
+
