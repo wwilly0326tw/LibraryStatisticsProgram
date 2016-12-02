@@ -1,0 +1,4 @@
+Thu, 01 Dec 2016 22:41:30 WriteSFXtoDB.py[line:37] ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'JOURNAL", "ACTIVE", NULL, NULL, NULL, "eng", "Resurrection : the bulletin of the' at line 1
+Thu, 01 Dec 2016 22:43:26 WriteSFXtoDB.py[line:37] ERROR 1406 (22001): Data too long for column 'LCCN' at row 1
+Thu, 01 Dec 2016 22:44:07 WriteSFXtoDB.py[line:37] ERROR 1406 (22001): Data too long for column 'PlaceofPublication' at row 1
+Thu, 01 Dec 2016 23:05:23 WriteSFXtoDB.py[line:37] ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'OTB", 0)' at line 1
