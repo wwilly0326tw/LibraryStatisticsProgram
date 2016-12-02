@@ -4,7 +4,7 @@ import mysql.connector
 import logging
 import logging.config
 
-
+#
 def writeSFX2DB(filename=""):
     if filename is "":
         print ("Please Input a file.")
