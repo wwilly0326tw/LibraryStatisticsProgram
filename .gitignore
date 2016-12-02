@@ -1,0 +1,13 @@
+CVSModify/觀察結果.txt
+CmpInterval/test.py
+CVSModify/testdata.txt
+ParseDate/__pycache__/parseDate.cpython-35.pyc
+CmpISSN/__pycache__/ISSN_Comp.cpython-35.pyc
+CVSModify/scopus(64).csv
+CmpInterval/__pycache__/cmpInterval.cpython-35.pyc
+ParseDate/testdata.txt
+ParseDate/result.txt
+ParseDate/parsedDate.xlsx
+CVSModify/testdata.csv
+*.txt
+*.xlsx
