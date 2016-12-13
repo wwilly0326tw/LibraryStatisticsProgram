@@ -27,11 +27,11 @@ def main(filename="testdata.xlsx"):
     if filename is not "":
         wb = load_workbook(filename=filename, read_only=True)
         ws = wb[wb.sheetnames[0]]
-        dataStr = 'A5001:J' + str(ws.max_row)
+        dataStr = 'A1001:J' + str(ws.max_row)
         for row in ws[dataStr]:
             sfxIDList = cmpISSN(row[8].value) # 比對到ISSN的清單
             scopusID = insertDB(row) # 將scopus的資料insert到DB
-            if len(sfxIDList) is not 0:
+            if sfxIDList is not None and len(sfxIDList) is not 0:
                 try:
                     cur.execute("SELECT year, volume, issue from scopus where id = " + str(scopusID))
                     YVI = cur.fetchone()
@@ -55,13 +55,13 @@ def main(filename="testdata.xlsx"):
                             logger.info('Create relation in support error.')
                             logger.error(err)
                             continue
-            #         else:
-            #             print (threshold)
-            #             print (YVI)
-            #             print(colored('Interval not match.', 'red'))
-            # else:
-            #     print(row[8].value)
-            #     print(colored('ISSN not match.', 'red'))
+                    else:
+                        print (threshold)
+                        print (YVI)
+                        print(colored('Interval not match.', 'red'))
+            else:
+                print(row[8].value)
+                print(colored('ISSN not match.', 'red'))
 
     else:
         print('Please Input the File.')
@@ -125,3 +125,4 @@ def modifyYVI(scoupusID):
 
 if __name__ == '__main__':
     main(filename="../Data/scopus/scopus.xlsx")
+    # main()

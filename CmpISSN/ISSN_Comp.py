@@ -47,11 +47,14 @@ def cmpISSN(ISSN):
         logger.error(err)
         return False
 
-    try:
-        cur.execute("SELECT id from sfx where ISSN = '" + ISSN + "'")
-        return cur.fetchall()
-    except Exception as err:
-        logger.error(err)
+    if ISSN is not None:
+        try:
+            cur.execute("SELECT id from sfx where ISSN = '" + ISSN + "'")
+            return cur.fetchall()
+        except Exception as err:
+            logger.error(err)
+            return None
+    else:
         return None
 
 
