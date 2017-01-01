@@ -27,7 +27,7 @@ def main(filename="testdata.xlsx"):
     if filename is not "":
         wb = load_workbook(filename=filename, read_only=True)
         ws = wb[wb.sheetnames[0]]
-        dataStr = 'A1001:J' + str(ws.max_row)
+        dataStr = 'A30035:J' + str(ws.max_row)
         for row in ws[dataStr]:
             sfxIDList = cmpISSN(row[8].value) # 比對到ISSN的清單
             scopusID = insertDB(row) # 將scopus的資料insert到DB

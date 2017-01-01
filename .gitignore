@@ -11,3 +11,9 @@ ParseDate/parsedDate.xlsx
 CVSModify/testdata.csv
 *.txt
 *.xlsx
+DBconfig.py
+*.log
+__pycache__/DBconfig.cpython-34.pyc
+*.conf
+logger.conf
+*.pyc
