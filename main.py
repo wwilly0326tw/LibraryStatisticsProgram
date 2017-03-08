@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from Program.CmpISSN.ISSN_Comp import cmpISSN
 from Program.CmpInterval.cmpInterval import cmpInterval
 from openpyxl import load_workbook
@@ -20,15 +21,31 @@ except Exception as err:
     logger.error(err)
     sys.exit(-1)
 
+try:
+    cur.execute("SELECT batchID FROM librarystatisticsdata.scopus order by batchID desc limit 1")
+    batchID = cur.fetchone()[0]
+    batchID += 1
+except Exception as err:
+    logger.error(err)
+    sys.exit(-1)
+
+try:
+    outputFile = open(str(batchID) + str(".txt"), 'w+', encoding = 'UTF-8')
+except Exception as err:
+    logger.error(err)
+    sys.exit(-1)
 
 def main(filename="testdata.xlsx"):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     if filename is not "":
-        wb = load_workbook(filename=filename, read_only=True)
+        wb = load_workbook(filename=filename)
         ws = wb[wb.sheetnames[0]]
-        dataStr = 'A30035:J' + str(ws.max_row)
+        dataStr = 'A2:J' + str(ws.max_row)
         for row in ws[dataStr]:
+            isSupport = ""
+            isPaid = ""
+            themeIDStr = ""
             sfxIDList = cmpISSN(row[8].value) # 比對到ISSN的清單
             scopusID = insertDB(row) # 將scopus的資料insert到DB
             if sfxIDList is not None and len(sfxIDList) is not 0:
@@ -48,28 +65,64 @@ def main(filename="testdata.xlsx"):
                         logger.error(err)
                         continue
                     if cmpInterval(threshold, str(YVI[0]) + "." + str(YVI[1]) + "." + str(YVI[2])):
+                        isSupport = "Y"
                         try:
                             cur.execute("INSERT INTO support(sfxID, scopusID) values(" + str(sfxID[0]) + "," + str(scopusID) + ")")
-                            conn.commit()
+                            # conn.commit()
                         except Exception as err:
                             logger.info('Create relation in support error.')
                             logger.error(err)
                             continue
+                        # 蒐集sfx所對應的主題id
+                        try:
+                            cur.execute("SELECT tid from relation_sfx_theme where sfxid = " + str(sfxID[0]))
+                            resultOfTid = cur.fetchall()
+                            for Tid in resultOfTid:
+                                themeIDStr += str(Tid[0])
+                                themeIDStr += ","
+                        except Exception as err:
+                            logger.info('Search themeID error.')
+                            logger.error(err)
+                            continue
+                        # 判別是否有付費
+                        try:
+                            cur.execute("SELECT isfree from sfx where id = " + str(sfxID[0]))
+                            if cur.fetchone()[0] == 0:
+                                isPaid = "Y"
+                            elif isPaid == "":
+                                isPaid = "N"
+                        except Exception as err:
+                            logger.info('paid error.')
+                            logger.error(err)
+                            continue
+
                     else:
                         print (threshold)
                         print (YVI)
                         print(colored('Interval not match.', 'red'))
+
             else:
                 print(row[8].value)
                 print(colored('ISSN not match.', 'red'))
+                outputFile.write('\n')
+                continue
 
+            if themeIDStr is not "":
+                print(colored('Match.', 'yellow'))
+                outputFile.write(isSupport)
+                outputFile.write('\t')
+                outputFile.write(isPaid)
+                outputFile.write('\t')
+                outputResult(themeIDStr)
+            outputFile.write('\n')
     else:
         print('Please Input the File.')
         return
+    outputFile.close()
 
 
 def insertDB(row):
-    sqlStmt = "INSERT INTO scopus(author_keyword, book_name, year, source_name, volume, issue, DOI, link, ISSN, ISBN) values("
+    sqlStmt = "INSERT INTO scopus(author_keyword, book_name, year, source_name, volume, issue, DOI, link, ISSN, ISBN, batchID) values("
     valStr = ""
     for col in row:
         if col.value is None:
@@ -79,11 +132,12 @@ def insertDB(row):
             valStr += str(col.value).replace("\"", "'").replace("\\", "")
             valStr += "\""
         valStr += ", "
-    valStr = valStr[0: len(valStr) - 2]
+    valStr = valStr[0: len(valStr) - 1]
+    valStr += str(batchID)
     valStr += ")"
     try:
         cur.execute(sqlStmt + valStr)
-        conn.commit()
+        # conn.commit()
         # 修改卷期非數字的問題
         scoupusID = cur.lastrowid
     except Exception as err:
@@ -117,12 +171,65 @@ def modifyYVI(scoupusID):
     if updateFlag:
         try:
             cur.execute("UPDATE scopus set year=" + str(tmpList[0]) + ",volume=" + str(tmpList[1]) + ", issue=" + str(tmpList[2]) + " where id = " + str(scoupusID))
-            conn.commit()
+            # conn.commit()
         except Exception as err:
             logger.info('Update YVI error.')
             logger.error(err)
             return False
 
+def outputResult(themeIDList):
+    # 尋找主題
+    themeStr = ""
+    try:
+        cur.execute("SELECT name from theme where tid in (" + themeIDList[0: len(themeIDList) - 1] + ")")
+        resultOfTheme = cur.fetchall()
+        for theme in resultOfTheme:
+            themeStr += theme[0]
+            themeStr += "|"
+        themeStr = themeStr[0: len(themeStr) - 1]
+        print(themeStr)
+        outputFile.write(themeStr)
+        outputFile.write('\t')
+    except Exception as err:
+        logger.info('Search theme error.')
+        logger.error(err)
+    # 尋找主題所對應的科系
+    departmentStr = ""
+    collegeID = ""
+    try:
+        cur.execute(
+            "SELECT name, cid from department where did in (select did from relation_theme_department where tid in (" + themeIDList[
+                                                                                                                        0: len(
+                                                                                                                            themeIDList) - 1] + "))")
+        resultOfDepart = cur.fetchall()
+        for depart in resultOfDepart:
+            collegeID += str(depart[1])
+            collegeID += ","
+            departmentStr += depart[0]
+            departmentStr += "|"
+        departmentStr = departmentStr[0: len(departmentStr) - 1]
+        print(departmentStr)
+        outputFile.write(departmentStr)
+        outputFile.write('\t')
+    except Exception as err:
+        logger.info('Search department error.')
+        logger.error(err)
+    # 尋找科系所對應的院
+    collegeStr = ""
+    try:
+        cur.execute("SELECT name from college where cid in (" + collegeID[0: len(collegeID) - 1] + ")")
+        resultOfCollege = cur.fetchall()
+        for college in resultOfCollege:
+            collegeStr += college[0]
+            collegeStr += "|"
+        collegeStr = collegeStr[0: len(collegeStr) - 1]
+        print(collegeStr)
+        outputFile.write(collegeStr)
+        outputFile.write('\t')
+    except Exception as err:
+        logger.info('Search college error.')
+        logger.error(err)
+
 if __name__ == '__main__':
-    main(filename="../Data/scopus/scopus.xlsx")
-    # main()
+    # main(filename="../Data/scopus/scopus.xlsx")
+    main()
