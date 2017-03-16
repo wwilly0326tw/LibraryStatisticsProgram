@@ -22,7 +22,7 @@ except Exception as err:
     sys.exit(-1)
 
 try:
-    cur.execute("SELECT batchID FROM librarystatisticsdata.scopus order by batchID desc limit 1")
+    cur.execute("SELECT batchID FROM librarystatisticsdata.support order by batchID desc limit 1")
     batchID = cur.fetchone()[0]
     batchID += 1
 except Exception as err:
@@ -67,7 +67,7 @@ def main(filename="testdata.xlsx"):
                     if cmpInterval(threshold, str(YVI[0]) + "." + str(YVI[1]) + "." + str(YVI[2])):
                         isSupport = "Y"
                         try:
-                            cur.execute("INSERT INTO support(sfxID, scopusID) values(" + str(sfxID[0]) + "," + str(scopusID) + ")")
+                            cur.execute("INSERT INTO support(sfxID, scopusID, batchID) values(" + str(sfxID[0]) + "," + str(scopusID) + "," + str(batchID) + ")")
                             # conn.commit()
                         except Exception as err:
                             logger.info('Create relation in support error.')
@@ -122,7 +122,7 @@ def main(filename="testdata.xlsx"):
 
 
 def insertDB(row):
-    sqlStmt = "INSERT INTO scopus(author_keyword, book_name, year, source_name, volume, issue, DOI, link, ISSN, ISBN, batchID) values("
+    sqlStmt = "INSERT INTO scopus(author_keyword, book_name, year, source_name, volume, issue, DOI, link, ISSN, ISBN) values("
     valStr = ""
     for col in row:
         if col.value is None:
@@ -132,8 +132,7 @@ def insertDB(row):
             valStr += str(col.value).replace("\"", "'").replace("\\", "")
             valStr += "\""
         valStr += ", "
-    valStr = valStr[0: len(valStr) - 1]
-    valStr += str(batchID)
+    valStr = valStr[0: len(valStr) - 2]
     valStr += ")"
     try:
         cur.execute(sqlStmt + valStr)
