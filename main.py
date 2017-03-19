@@ -68,7 +68,8 @@ def main(filename="testdata.xlsx"):
                         isSupport = "Y"
                         try:
                             cur.execute("INSERT INTO support(sfxID, scopusID, batchID) values(" + str(sfxID[0]) + "," + str(scopusID) + "," + str(batchID) + ")")
-                            # conn.commit()
+                            print ("INSERT INTO support(sfxID, scopusID, batchID) values(" + str(sfxID[0]) + "," + str(scopusID) + "," + str(batchID) + ")")
+                            conn.commit()
                         except Exception as err:
                             logger.info('Create relation in support error.')
                             logger.error(err)
@@ -136,7 +137,8 @@ def insertDB(row):
     valStr += ")"
     try:
         cur.execute(sqlStmt + valStr)
-        # conn.commit()
+        print (sqlStmt + valStr)
+        conn.commit()
         # 修改卷期非數字的問題
         scoupusID = cur.lastrowid
     except Exception as err:
@@ -170,7 +172,8 @@ def modifyYVI(scoupusID):
     if updateFlag:
         try:
             cur.execute("UPDATE scopus set year=" + str(tmpList[0]) + ",volume=" + str(tmpList[1]) + ", issue=" + str(tmpList[2]) + " where id = " + str(scoupusID))
-            # conn.commit()
+            print ("UPDATE scopus set year=" + str(tmpList[0]) + ",volume=" + str(tmpList[1]) + ", issue=" + str(tmpList[2]) + " where id = " + str(scoupusID))
+            conn.commit()
         except Exception as err:
             logger.info('Update YVI error.')
             logger.error(err)
