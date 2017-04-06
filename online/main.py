@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
-from Program.CmpISSN.ISSN_Comp import cmpISSN
-from Program.CmpInterval.cmpInterval import cmpInterval
+from CmpISSN.ISSN_Comp import cmpISSN
+from CmpInterval.cmpInterval import cmpInterval
 from openpyxl import load_workbook
 from termcolor.termcolor import colored
 import logging
 import logging.config
 import sys
 import re
-import Program.DBconfig as DBconfig
+import DBconfig as DBconfig
 import mysql.connector
+import os
 
 """此程式用於統合比對ISSN以及年卷期，回傳是否有購買此篇參考文獻"""
-logging.config.fileConfig("./logger.conf")
+# logging.config.fileConfig("./logger.conf")
 logger = logging.getLogger("root")
+debug = 0
+
 try:
     conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
                                    host=DBconfig.host)
@@ -30,16 +33,16 @@ except Exception as err:
     sys.exit(-1)
 
 try:
-    outputFile = open(str(batchID) + str(".txt"), 'w+', encoding = 'UTF-8')
+    outputFile = open("../result/" + str(batchID) + str(".txt"), 'w+', encoding = 'UTF-8')
 except Exception as err:
     logger.error(err)
     sys.exit(-1)
 
-def main(filename="testdata2.xlsx"):
+def main(filename="testdata.xlsx"):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     if filename is not "":
-        wb = load_workbook(filename=filename)
+        wb = load_workbook(filename="../data/" + filename)
         ws = wb[wb.sheetnames[1]]
         dataStr = 'A2:J' + str(ws.max_row)
         for row in ws[dataStr]:
@@ -68,8 +71,9 @@ def main(filename="testdata2.xlsx"):
                         isSupport = "Y"
                         try:
                             cur.execute("INSERT INTO support(sfxID, scopusID, batchID) values(" + str(sfxID[0]) + "," + str(scopusID) + "," + str(batchID) + ")")
-                            print ("INSERT INTO support(sfxID, scopusID, batchID) values(" + str(sfxID[0]) + "," + str(scopusID) + "," + str(batchID) + ")")
-                            # conn.commit()
+                            if debug:
+                                print ("INSERT INTO support(sfxID, scopusID, batchID) values(" + str(sfxID[0]) + "," + str(scopusID) + "," + str(batchID) + ")")
+                            conn.commit()
                         except Exception as err:
                             logger.info('Create relation in support error.')
                             logger.error(err)
@@ -98,18 +102,21 @@ def main(filename="testdata2.xlsx"):
                             continue
 
                     else:
-                        print (threshold)
-                        print (YVI)
-                        print(colored('Interval not match.', 'red'))
+                        if debug:
+                            print (threshold)
+                            print (YVI)
+                            print(colored('Interval not match.', 'red'))
 
             else:
-                print(row[8].value)
-                print(colored('ISSN not match.', 'red'))
+                if debug:
+                    print(row[8].value)
+                    print(colored('ISSN not match.', 'red'))
                 outputFile.write('\n')
                 continue
 
             if themeIDStr is not "":
-                print(colored('Match.', 'yellow'))
+                if debug:
+                    print(colored('Match.', 'yellow'))
                 outputFile.write(isSupport)
                 outputFile.write('\t')
                 outputFile.write(isPaid)
@@ -117,8 +124,10 @@ def main(filename="testdata2.xlsx"):
                 outputResult(themeIDStr)
             outputFile.write('\n')
     else:
-        print('Please Input the File.')
+        if debug:
+            print('Please Input the File.')
         return
+    print (str(batchID))
     outputFile.close()
 
 
@@ -137,12 +146,14 @@ def insertDB(row):
     valStr += ")"
     try:
         cur.execute(sqlStmt + valStr)
-        print (sqlStmt + valStr)
-        # conn.commit()
+        if debug:
+            print (sqlStmt + valStr)
+        conn.commit()
         # 修改卷期非數字的問題
         scoupusID = cur.lastrowid
     except Exception as err:
-        print(sqlStmt + valStr)
+        if debug:
+            print(sqlStmt + valStr)
         logger.error(err)
         conn.rollback()
         return
@@ -172,8 +183,9 @@ def modifyYVI(scoupusID):
     if updateFlag:
         try:
             cur.execute("UPDATE scopus set year=" + str(tmpList[0]) + ",volume=" + str(tmpList[1]) + ", issue=" + str(tmpList[2]) + " where id = " + str(scoupusID))
-            print ("UPDATE scopus set year=" + str(tmpList[0]) + ",volume=" + str(tmpList[1]) + ", issue=" + str(tmpList[2]) + " where id = " + str(scoupusID))
-            # conn.commit()
+            if debug:
+                print ("UPDATE scopus set year=" + str(tmpList[0]) + ",volume=" + str(tmpList[1]) + ", issue=" + str(tmpList[2]) + " where id = " + str(scoupusID))
+            conn.commit()
         except Exception as err:
             logger.info('Update YVI error.')
             logger.error(err)
@@ -189,7 +201,8 @@ def outputResult(themeIDList):
             themeStr += theme[0]
             themeStr += "|"
         themeStr = themeStr[0: len(themeStr) - 1]
-        print(themeStr)
+        if debug:
+            print(themeStr)
         outputFile.write(themeStr)
         outputFile.write('\t')
     except Exception as err:
@@ -210,7 +223,8 @@ def outputResult(themeIDList):
             departmentStr += depart[0]
             departmentStr += "|"
         departmentStr = departmentStr[0: len(departmentStr) - 1]
-        print(departmentStr)
+        if debug:
+            print(departmentStr)
         outputFile.write(departmentStr)
         outputFile.write('\t')
     except Exception as err:
@@ -225,7 +239,8 @@ def outputResult(themeIDList):
             collegeStr += college[0]
             collegeStr += "|"
         collegeStr = collegeStr[0: len(collegeStr) - 1]
-        print(collegeStr)
+        if debug:
+            print(collegeStr)
         outputFile.write(collegeStr)
         outputFile.write('\t')
     except Exception as err:
