@@ -5,17 +5,20 @@ import mysql.connector
 import logging
 import logging.config
 import Program.DBconfig as DBconfig
+from time import gmtime, strftime
 
 """ 將SFX中的主題分類建立與table Theme 的relation, 輸入sfxID將此ID建立分類關聯 或 將資料庫中未建立關聯的都跑過一遍  """
 
 
-def classify(sfxID=""):
+def classify(sfxID="", year=""):
     conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
                                    host=DBconfig.host)
     cur = conn.cursor()
+    if year == "":
+        year = strftime("%Y", gmtime())
     if sfxID is "":
         try:
-            cur.execute("SELECT id, categories FROM sfx where id not in (select sfxid from relation_sfx_theme)")
+            cur.execute("SELECT id, categories FROM sfx where year = " + str(year) + "and id not in (select sfxid from relation_sfx_theme )")
             sfxIDResult = cur.fetchall()
         except Exception as err:
             logger.error(err)
@@ -29,7 +32,7 @@ def classify(sfxID=""):
             sys.exit(-1)
 
     try:
-        cur.execute("SELECT tid, name from theme")
+        cur.execute("SELECT tid, name from theme where year = " + str(year))
         themeResult = cur.fetchall()
     except Exception as err:
         logger.error(err)

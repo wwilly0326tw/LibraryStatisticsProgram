@@ -4,7 +4,7 @@ import mysql.connector
 import logging
 import logging.config
 
-
+""" 此程式用於將sfx資料寫入資料庫中 """
 def writeSFX2DB(filename=""):
     if filename is "":
         print ("Please Input a file.")

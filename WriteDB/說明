@@ -1,2 +1,6 @@
-writeSFXtoDB：
-此程式用於將sfx資料寫入資料庫中
+Import DB Procedure
+1. 先將每次的sfx寫入DB(DB自動帶入今年年分) writeSFXtoDB
+1.5 若要更新Department(寫入未在table內的) writeDepartment
+2. 建立Theme與Depart的relation(自動帶入今年年分) relate_Theme_Depart
+3. 將sfx分類至各theme(須給年分，預設以今年處理) classifyCategory
+4. 更新SFX與Department的relation relate_SFX-Depart
