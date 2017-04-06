@@ -38,7 +38,7 @@ def getISSN():
 
 
 def cmpISSN(ISSN):
-
+    logger = logging.getLogger("root")
     try:
         conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
                                        host=DBconfig.host)

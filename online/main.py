@@ -43,14 +43,18 @@ def main(filename="testdata.xlsx"):
         filename = sys.argv[1]
     if filename is not "":
         wb = load_workbook(filename="../data/" + filename)
-        ws = wb[wb.sheetnames[1]]
+        ws = wb[wb.sheetnames[0]]
         dataStr = 'A2:J' + str(ws.max_row)
         for row in ws[dataStr]:
-            isSupport = ""
+            isSupport = "nSupported"
             isPaid = ""
             themeIDStr = ""
+            if row[8].value == "":
+                continue
             sfxIDList = cmpISSN(row[8].value) # 比對到ISSN的清單
             scopusID = insertDB(row) # 將scopus的資料insert到DB
+            if scopusID == -1:
+                continue
             if sfxIDList is not None and len(sfxIDList) is not 0:
                 try:
                     cur.execute("SELECT year, volume, issue from scopus where id = " + str(scopusID))
@@ -68,7 +72,7 @@ def main(filename="testdata.xlsx"):
                         logger.error(err)
                         continue
                     if cmpInterval(threshold, str(YVI[0]) + "." + str(YVI[1]) + "." + str(YVI[2])):
-                        isSupport = "Y"
+                        isSupport = "Supported"
                         try:
                             cur.execute("INSERT INTO support(sfxID, scopusID, batchID) values(" + str(sfxID[0]) + "," + str(scopusID) + "," + str(batchID) + ")")
                             if debug:
@@ -93,9 +97,9 @@ def main(filename="testdata.xlsx"):
                         try:
                             cur.execute("SELECT isfree from sfx where id = " + str(sfxID[0]))
                             if cur.fetchone()[0] == 0:
-                                isPaid = "Y"
+                                isPaid = "Paid"
                             elif isPaid == "":
-                                isPaid = "N"
+                                isPaid = "nPaid"
                         except Exception as err:
                             logger.info('paid error.')
                             logger.error(err)
@@ -111,13 +115,14 @@ def main(filename="testdata.xlsx"):
                 if debug:
                     print(row[8].value)
                     print(colored('ISSN not match.', 'red'))
+                outputFile.write(isSupport)
                 outputFile.write('\n')
                 continue
 
+            outputFile.write(isSupport)
             if themeIDStr is not "":
                 if debug:
                     print(colored('Match.', 'yellow'))
-                outputFile.write(isSupport)
                 outputFile.write('\t')
                 outputFile.write(isPaid)
                 outputFile.write('\t')
@@ -156,7 +161,7 @@ def insertDB(row):
             print(sqlStmt + valStr)
         logger.error(err)
         conn.rollback()
-        return
+        return -1
     modifyYVI(scoupusID)
     return scoupusID
 
