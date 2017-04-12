@@ -51,6 +51,8 @@ def main(filename="test05_rapidILL.xlsx"):
             sfxIDList = cmpISSN(row[8].value) # 比對到ISSN的清單
             scopusID = insertDB(row) # 將scopus的資料insert到DB
             if scopusID == -1:
+                outputFile.write("Data Error")
+                outputFile.write('\n')
                 continue
             if sfxIDList is not None and len(sfxIDList) is not 0:
                 try:
