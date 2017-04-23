@@ -9,18 +9,26 @@ from time import gmtime, strftime
 
 """ 將SFX中的主題分類建立與table Theme 的relation, 輸入sfxID將此ID建立分類關聯 或 將資料庫中未建立關聯的都跑過一遍  """
 
+logging.config.fileConfig("../logger.conf")
+logger = logging.getLogger("root")
 
-def classify(sfxID="", year=""):
+try:
     conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
                                    host=DBconfig.host)
     cur = conn.cursor()
+except Exception as err:
+    logger.error(err)
+    sys.exit(-1)
+
+def classify(sfxID="", year=""):
     if year == "":
         year = strftime("%Y", gmtime())
     if sfxID is "":
         try:
-            cur.execute("SELECT id, categories FROM sfx where year = " + str(year) + "and id not in (select sfxid from relation_sfx_theme )")
+            cur.execute("SELECT id, categories FROM sfx where year = " + str(year) + " and id not in (select sfxid from relation_sfx_theme )")
             sfxIDResult = cur.fetchall()
         except Exception as err:
+            print (err)
             logger.error(err)
             sys.exit(-1)
     else:

@@ -19,10 +19,11 @@ def relate_SFX_Depart(year = ""):
         return False
 
     try:
-        cur.execute("insert relation_sfx_department select a.id as sfxid, c.did as did from sfx a, relation_sfx_theme b,"
-                    " relation_theme_department c, department d where a.year = " + str(year) + " a.id = b.sfxid and b.tid = c.tid and c.did = d.did group by did, id")
+        stmt = "insert relation_sfx_department select a.id as sfxid, c.did as did from sfx a, relation_sfx_theme b,relation_theme_department c, department d where a.year = " + str(year) + " and a.id = b.sfxid and b.tid = c.tid and c.did = d.did group by did, id"
+        cur.execute(stmt)
         conn.commit()
     except Exception as err:
+        print (stmt)
         logger.error(err)
         conn.rollback()
 

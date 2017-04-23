@@ -3,7 +3,7 @@ import mysql.connector
 import logging
 import logging.config
 
-""" 程式功能為刪除某一年相關的所有資料(sfx、theme、rel_theme_dep、rel_sfx_theme、rel_sfx_dep、support """
+""" 程式功能為刪除某一年相關的所有資料(sfx、theme、rel_theme_dep、rel_sfx_theme、rel_sfx_dep、support) """
 
 def deleteData(year = ""):
     if year == "":
