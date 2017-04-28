@@ -37,7 +37,7 @@ def getISSN():
 """比對PISSN EISSN 是否有相同的，若相同回傳其index"""
 
 
-def cmpISSN(ISSN):
+def cmpISSNISBN(ISSN="", ISBN=""):
     logger = logging.getLogger("root")
     try:
         conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
@@ -47,9 +47,9 @@ def cmpISSN(ISSN):
         logger.error(err)
         return False
 
-    if ISSN is not None:
+    if ISSN is not None or ISBN is not None:
         try:
-            cur.execute("SELECT id from sfx where ISSN = '" + ISSN + "'")
+            cur.execute("SELECT id from sfx where ISSN = '" + ISSN + "' or ISBN = '" + ISBN + "'")
             return cur.fetchall()
         except Exception as err:
             logger.error(err)

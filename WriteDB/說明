@@ -1,7 +1,8 @@
 Import DB Procedure
 1. 先將每次的sfx寫入DB(DB自動帶入今年年分) writeSFXtoDB
 2. 將sfx的Threshold轉成結構化的資料 parseDate
-2.5 若要更新Department(寫入未在table內的) writeDepartment
-3. 建立Theme與Depart的relation(自動帶入今年年分) relateThemeDepart
-4. 將sfx分類至各theme(須給年分，預設處理今年) classifyCategory
-5. 更新SFX與Department的relation(須給年分，預設空值) relateSFXDepart
+3. 將sfx的ISBN都轉成13碼
+3.5 若要更新Department(寫入未在table內的) writeDepartment
+4. 建立Theme與Depart的relation(自動帶入今年年分) relateThemeDepart
+5. 將sfx分類至各theme(須給年分，預設處理今年) classifyCategory
+6. 更新SFX與Department的relation(須給年分，預設空值) relateSFXDepart

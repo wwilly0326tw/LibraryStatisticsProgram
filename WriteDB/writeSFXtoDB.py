@@ -39,7 +39,7 @@ def writeSFX2DB(filename=""):
                 valStr += "\""
             valStr += ", "
         dbStr = row[5].value
-        if dbStr.find('free') is not -1 or dbStr.find('Free') is not -1 or dbStr.find('Open Access') is not -1:
+        if dbStr is not None and dbStr.find('free') is not -1 or dbStr.find('Free') is not -1 or dbStr.find('Open Access') is not -1:
             valStr += "1"
         else:
             valStr += "0"

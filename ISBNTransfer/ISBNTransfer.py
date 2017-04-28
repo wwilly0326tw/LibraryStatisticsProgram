@@ -1,6 +1,12 @@
 import re
 
-def ISBN10to13(ISBN="1-5090-3770-5"):
+def ISBN10to13(ISBN="1-4673-5116-4"):
+    if ISBN is None:
+        return ""
+    if len(ISBN) < 10:
+        return ISBN
+    if len(ISBN) > 13:
+        return re.sub("[^0-9Xx]", "", ISBN)
     ISBN = re.sub("[^0-9Xx]", "", ISBN)
     isbnVal1 = 9
     isbnVal2 = 21

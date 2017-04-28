@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from Program.CmpISSN.ISSN_Comp import cmpISSN
+from Program.CmpISSN.ISSN_Comp import cmpISSNISBN
 from Program.CmpInterval.cmpInterval import cmpInterval
+from Program.ISBNTransfer.ISBNTransfer import ISBN10to13
 from openpyxl import load_workbook
 from termcolor.termcolor import colored
 import logging
@@ -65,7 +66,11 @@ def main(filename="testdata.xlsx"):
             targetNameStr = ""
             if row[8].value == "":
                 continue
-            sfxIDList = cmpISSN(row[8].value)  # 比對到ISSN的清單
+            ISSN = row[8].value
+            row[9].value = ISBN10to13(row[9].value)
+            ISBN = row[9].value
+
+            sfxIDList = cmpISSNISBN(ISSN, ISBN)  # 比對到ISSN的清單
             scopusID = insertDB(row)  # 將scopus的資料insert到DB
             if scopusID == -1:
                 outputFile.write("Data Error")
