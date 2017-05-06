@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
-from CmpISSN.ISSN_Comp import cmpISSN
+from CmpISSN.ISSN_Comp import cmpISSNISBN
 from CmpInterval.cmpInterval import cmpInterval
+from ISBNTransfer.ISBNTransfer import ISBN10to13
+from time import gmtime, strftime
 from openpyxl import load_workbook
 from termcolor.termcolor import colored
+import re
+import sys
 import logging
 import logging.config
-import sys
-import re
-import DBconfig as DBconfig
 import mysql.connector
-import os
+import DBconfig as DBconfig
 
 """此程式用於統合比對ISSN以及年卷期，回傳是否有購買此篇參考文獻"""
-# logging.config.fileConfig("./logger.conf")
+logging.config.fileConfig("../python/logger.conf")
 logger = logging.getLogger("root")
+FilePath = "../result/"
+InputPath = "../data/"
+toCommit = True
 debug = 0
 
 try:
@@ -33,27 +37,61 @@ except Exception as err:
     sys.exit(-1)
 
 try:
-    outputFile = open("../result/" + str(batchID) + str(".txt"), 'w+', encoding = 'UTF-8')
+    outputFile = open(FilePath + str(batchID) + str(".txt"), 'w+', encoding='UTF-8')
+    outputFile.write('Access_Type')
+    outputFile.write('\t')
+    outputFile.write('Themes')
+    outputFile.write('\t')
+    outputFile.write('Departments')
+    outputFile.write('\t')
+    outputFile.write('Colleges')
+    outputFile.write('\t')
+    outputFile.write('Targets')
+    outputFile.write('\n')
 except Exception as err:
     logger.error(err)
     sys.exit(-1)
 
-def main(filename="testdata.xlsx"):
+
+def main(filename="testdata.xlsx", year=""):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     if filename is not "":
-        wb = load_workbook(filename="../data/" + filename)
+        wb = load_workbook(filename=InputPath + filename)
         ws = wb[wb.sheetnames[0]]
-        dataStr = 'A2:J' + str(ws.max_row)
+        dataStr = 'A1:J' + str(ws.max_row)
         for row in ws[dataStr]:
-            isSupport = "nSupported"
+            if year == "":
+                year = strftime("%Y", gmtime())
+            isSupport = ""
             isPaid = ""
             themeIDStr = ""
-            if row[8].value == "":
+            targetNameStr = ""
+            ISSN = row[8].value
+            row[9].value = ISBN10to13(row[9].value)  # 去除多餘字元
+            ISBN = row[9].value
+
+            if ISSN is not None:
+                if ISBN is not None:
+                    # ISSN 與 ISBN 皆有值時，若卷期都無值用ISBN
+                    if row[4].value is None and row[5].value is None:
+                        sfxIDList = cmpISSNISBN(ISBN = ISBN, year = year)  # 比對到ISBN的清單
+                    else:
+                        sfxIDList = cmpISSNISBN(ISSN = ISSN, year = year)  # 比對到ISSN的清單
+                        ISBN = ""
+                else:
+                    # ISSN 有值 ISBN 無值
+                    sfxIDList = cmpISSNISBN(ISSN = ISSN, year = year)  # 比對到ISSN的清單
+            elif ISBN is not None:
+                # ISSN　無值 ISBN 有值
+                sfxIDList = cmpISSNISBN(ISBN = ISBN, year = year)  # 比對到ISBN的清單
+            else:
+                # ISSN ISBN 都無值
                 continue
-            sfxIDList = cmpISSN(row[8].value) # 比對到ISSN的清單
-            scopusID = insertDB(row) # 將scopus的資料insert到DB
+            scopusID = insertDB(row)  # 將scopus的資料insert到DB
             if scopusID == -1:
+                outputFile.write("Data Error")
+                outputFile.write('\n')
                 continue
             if sfxIDList is not None and len(sfxIDList) is not 0:
                 try:
@@ -71,13 +109,18 @@ def main(filename="testdata.xlsx"):
                         logger.info('Select threshold from sfx error.')
                         logger.error(err)
                         continue
-                    if cmpInterval(threshold, str(YVI[0]) + "." + str(YVI[1]) + "." + str(YVI[2])):
-                        isSupport = "Supported"
+                    # 若ISBN有值 代表此次比較是以ISBN為基準，不需要比對區間
+                    if ISBN is not "" or cmpInterval(threshold, str(YVI[0]) + "." + str(YVI[1]) + "." + str(YVI[2])):
+                        isSupport = 1
                         try:
-                            cur.execute("INSERT INTO support(sfxID, scopusID, batchID) values(" + str(sfxID[0]) + "," + str(scopusID) + "," + str(batchID) + ")")
+                            cur.execute(
+                                "INSERT INTO support(sfxID, scopusID, batchID) values(" + str(sfxID[0]) + "," + str(
+                                    scopusID) + "," + str(batchID) + ")")
                             if debug:
-                                print ("INSERT INTO support(sfxID, scopusID, batchID) values(" + str(sfxID[0]) + "," + str(scopusID) + "," + str(batchID) + ")")
-                            conn.commit()
+                                print("INSERT INTO support(sfxID, scopusID, batchID) values(" + str(sfxID[0]) + "," + str(
+                                scopusID) + "," + str(batchID) + ")")
+                            if toCommit:
+                                conn.commit()
                         except Exception as err:
                             logger.info('Create relation in support error.')
                             logger.error(err)
@@ -93,13 +136,25 @@ def main(filename="testdata.xlsx"):
                             logger.info('Search themeID error.')
                             logger.error(err)
                             continue
+                        # 蒐集sfx所對應的target name
+                        try:
+                            cur.execute("SELECT TargetPublicName from sfx where id=" + str(sfxID[0]))
+                            targetName = cur.fetchone()[0]
+                            targetNameStr += "\""
+                            targetNameStr += targetName
+                            targetNameStr += "\""
+                            targetNameStr += ","
+                        except Exception as err:
+                            logger.info('Select TargetName from sfx error.')
+                            logger.error(err)
+                            continue
                         # 判別是否有付費
                         try:
                             cur.execute("SELECT isfree from sfx where id = " + str(sfxID[0]))
                             if cur.fetchone()[0] == 0:
-                                isPaid = "Paid"
+                                isPaid = 1
                             elif isPaid == "":
-                                isPaid = "nPaid"
+                                isPaid = 0
                         except Exception as err:
                             logger.info('paid error.')
                             logger.error(err)
@@ -107,32 +162,61 @@ def main(filename="testdata.xlsx"):
 
                     else:
                         if debug:
-                            print (threshold)
-                            print (YVI)
+                            print(threshold)
+                            print(YVI)
                             print(colored('Interval not match.', 'red'))
-
-            else:
+                # 建立scopus與Target的關聯
+                if targetNameStr is not "":
+                    try:
+                        cur.execute(
+                            "SELECT tid from target where name in (" + targetNameStr[0: len(targetNameStr) - 1] + ")")
+                        resultOfTarget = cur.fetchall()
+                        for target in resultOfTarget:
+                            try:
+                                insertStr = "INSERT INTO relation_target_scopus(tid, scopusID, batchID) values(" + str(target[0]) + "," + str(
+                                        scopusID) + "," + str(batchID) + ")"
+                                cur.execute(insertStr)
+                                if debug:
+                                    print (insertStr)
+                                if toCommit:
+                                    conn.commit()
+                            except Exception as err:
+                                conn.rollback()
+                                logger.info('INSERT relation_target_scopus error.')
+                                logger.error(err)
+                    except Exception as err:
+                        if debug:
+                            print (targetNameStr)
+                        logger.info('Relate target and scopus error.')
+                        logger.error(err)
+            else:  # 未找到ISSN 直接結束
                 if debug:
-                    print(row[8].value)
-                    print(colored('ISSN not match.', 'red'))
-                outputFile.write(isSupport)
+                    print(colored('ISSN/ISBN not match.', 'red'))
+                outputFile.write("Not_Found")
                 outputFile.write('\n')
                 continue
 
-            outputFile.write(isSupport)
-            if themeIDStr is not "":
-                if debug:
-                    print(colored('Match.', 'yellow'))
-                outputFile.write('\t')
-                outputFile.write(isPaid)
-                outputFile.write('\t')
-                outputResult(themeIDStr)
+            if isSupport:
+                if isPaid:
+                    outputFile.write("Subscribed")
+                else:
+                    outputFile.write("Free")
+                outputFile.write("\t")
+
+                # 用主題串成的ID去找對應的科系及院別
+                if themeIDStr is not "":
+                    if debug:
+                        print (themeIDStr)
+                        print(colored('Match.', 'yellow'))
+                    outputResult(themeIDStr, targetNameStr)
+            # 有比對到ISSN但區間未比對到
+            elif isSupport == "":
+                outputFile.write("Not_Found")
             outputFile.write('\n')
     else:
-        if debug:
-            print('Please Input the File.')
+        print('Please Input the File.')
         return
-    print (str(batchID))
+    print (batchID)
     outputFile.close()
 
 
@@ -152,8 +236,9 @@ def insertDB(row):
     try:
         cur.execute(sqlStmt + valStr)
         if debug:
-            print (sqlStmt + valStr)
-        conn.commit()
+            print(sqlStmt + valStr)
+        if toCommit:
+            conn.commit()
         # 修改卷期非數字的問題
         scoupusID = cur.lastrowid
     except Exception as err:
@@ -163,6 +248,7 @@ def insertDB(row):
         conn.rollback()
         return -1
     modifyYVI(scoupusID)
+    print(str(batchID))
     return scoupusID
 
 
@@ -187,16 +273,20 @@ def modifyYVI(scoupusID):
         updateFlag = 1
     if updateFlag:
         try:
-            cur.execute("UPDATE scopus set year=" + str(tmpList[0]) + ",volume=" + str(tmpList[1]) + ", issue=" + str(tmpList[2]) + " where id = " + str(scoupusID))
+            cur.execute("UPDATE scopus set year=" + str(tmpList[0]) + ",volume=" + str(tmpList[1]) + ", issue=" + str(
+                tmpList[2]) + " where id = " + str(scoupusID))
             if debug:
-                print ("UPDATE scopus set year=" + str(tmpList[0]) + ",volume=" + str(tmpList[1]) + ", issue=" + str(tmpList[2]) + " where id = " + str(scoupusID))
-            conn.commit()
+                print("UPDATE scopus set year=" + str(tmpList[0]) + ",volume=" + str(tmpList[1]) + ", issue=" + str(
+                tmpList[2]) + " where id = " + str(scoupusID))
+            if toCommit:
+                conn.commit()
         except Exception as err:
             logger.info('Update YVI error.')
             logger.error(err)
             return False
 
-def outputResult(themeIDList):
+
+def outputResult(themeIDList, targetNameList):
     # 尋找主題
     themeStr = ""
     try:
@@ -250,6 +340,22 @@ def outputResult(themeIDList):
         outputFile.write('\t')
     except Exception as err:
         logger.info('Search college error.')
+        logger.error(err)
+    # 尋找對應的Target
+    targetNameStr = ""
+    try:
+        cur.execute("SELECT name from target where name in (" + targetNameList[0: len(targetNameList) - 1] + ")")
+        resultOfTarget = cur.fetchall()
+        for target in resultOfTarget:
+            targetNameStr += target[0]
+            targetNameStr += "|"
+        targetNameStr = targetNameStr[0: len(targetNameStr) - 1]
+        if debug:
+            print(targetNameStr)
+        outputFile.write(targetNameStr)
+        outputFile.write('\t')
+    except Exception as err:
+        logger.info('Search target error.')
         logger.error(err)
 
 if __name__ == '__main__':

@@ -2,14 +2,16 @@
 from Program.CmpISSN.ISSN_Comp import cmpISSNISBN
 from Program.CmpInterval.cmpInterval import cmpInterval
 from Program.ISBNTransfer.ISBNTransfer import ISBN10to13
+from time import gmtime, strftime
 from openpyxl import load_workbook
 from termcolor.termcolor import colored
+import re
+import sys
 import logging
 import logging.config
-import sys
-import re
-import Program.DBconfig as DBconfig
 import mysql.connector
+import Program.DBconfig as DBconfig
+
 
 """此程式用於統合比對ISSN以及年卷期，回傳是否有購買此篇參考文獻"""
 logging.config.fileConfig("./logger.conf")
@@ -17,7 +19,7 @@ logger = logging.getLogger("root")
 FilePath = "./"
 InputPath = "./"
 toCommit = True
-debug = 1
+debug = 0
 
 try:
     conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
@@ -52,25 +54,41 @@ except Exception as err:
     sys.exit(-1)
 
 
-def main(filename="testdata.xlsx"):
+def main(filename="testdata.xlsx", year=""):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     if filename is not "":
         wb = load_workbook(filename=InputPath + filename)
         ws = wb[wb.sheetnames[0]]
-        dataStr = 'A2:J' + str(ws.max_row)
+        dataStr = 'A1:J' + str(ws.max_row)
         for row in ws[dataStr]:
+            if year == "":
+                year = strftime("%Y", gmtime())
             isSupport = ""
             isPaid = ""
             themeIDStr = ""
             targetNameStr = ""
-            if row[8].value == "":
-                continue
             ISSN = row[8].value
-            row[9].value = ISBN10to13(row[9].value)
+            row[9].value = ISBN10to13(row[9].value) # 去除多餘字元
             ISBN = row[9].value
 
-            sfxIDList = cmpISSNISBN(ISSN, ISBN)  # 比對到ISSN的清單
+            if ISSN is not None:
+                if ISBN is not None:
+                    # ISSN 與 ISBN 皆有值時，若卷期都無值用ISBN
+                    if row[4].value is None and row[5].value is None:
+                        sfxIDList = cmpISSNISBN(ISBN = ISBN, year = year)  # 比對到ISBN的清單
+                    else:
+                        sfxIDList = cmpISSNISBN(ISSN = ISSN, year = year)  # 比對到ISSN的清單
+                        ISBN = ""
+                else:
+                    # ISSN 有值 ISBN 無值
+                    sfxIDList = cmpISSNISBN(ISSN = ISSN, year = year)  # 比對到ISSN的清單
+            elif ISBN is not None:
+                # ISSN　無值 ISBN 有值
+                sfxIDList = cmpISSNISBN(ISBN = ISBN, year = year)  # 比對到ISBN的清單
+            else:
+                # ISSN ISBN 都無值
+                continue
             scopusID = insertDB(row)  # 將scopus的資料insert到DB
             if scopusID == -1:
                 outputFile.write("Data Error")
@@ -92,7 +110,8 @@ def main(filename="testdata.xlsx"):
                         logger.info('Select threshold from sfx error.')
                         logger.error(err)
                         continue
-                    if cmpInterval(threshold, str(YVI[0]) + "." + str(YVI[1]) + "." + str(YVI[2])):
+                    # 若ISBN有值 代表此次比較是以ISBN為基準，不需要比對區間
+                    if ISBN is not "" or cmpInterval(threshold, str(YVI[0]) + "." + str(YVI[1]) + "." + str(YVI[2])):
                         isSupport = 1
                         try:
                             cur.execute(
@@ -173,8 +192,7 @@ def main(filename="testdata.xlsx"):
                         logger.error(err)
             else:  # 未找到ISSN 直接結束
                 if debug:
-                    print(row[8].value)
-                    print(colored('ISSN not match.', 'red'))
+                    print(colored('ISSN/ISBN not match.', 'red'))
                 outputFile.write("Not_Found")
                 outputFile.write('\n')
                 continue

@@ -1,43 +1,16 @@
 # -*-coding: utf-8-*-
+from ISBNTransfer.ISBNTransfer import ISBN10to13
 import sys
 import time
 import DBconfig as DBconfig
 import mysql.connector
 import logging
 import logging.config
-from termcolor.termcolor import colored
-from openpyxl import Workbook
-from openpyxl import load_workbook
 
+"""Input ISSN 或 ISBN 數組，比較相同的SFX資料回傳"""
+debug = 0
 
-PISSN = []
-EISSN = []
-
-"""從sfx中取出PISSN EISSN"""
-
-
-def getISSN():
-    print(colored('Reading SFX-ISSN...', 'blue', attrs=['bold', 'underline']))
-    wb = load_workbook(filename='./Data/sfxISSN.xlsx', read_only=True)
-    # wb = load_workbook(filename = 'test.xlsx', read_only=True)
-    ws = wb[wb.sheetnames[0]]
-
-    PISSN_str = 'A1:A' + str(ws.max_row)
-    EISSN_str = 'B1:B' + str(ws.max_row)
-
-    for row in ws[PISSN_str]:
-        # print (cell.value)
-        PISSN.append(row[0].value)
-    for row in ws[EISSN_str]:
-        # print (cell.value)
-        EISSN.append(row[0].value)
-    print(colored('Reading SFX-ISSN... ', 'blue', attrs=['bold', 'underline']) + colored('Completed.', 'yellow'))
-
-
-"""比對PISSN EISSN 是否有相同的，若相同回傳其index"""
-
-
-def cmpISSN(ISSN):
+def cmpISSNISBN(ISSN="", ISBN="", year=""):
     logger = logging.getLogger("root")
     try:
         conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
@@ -47,9 +20,28 @@ def cmpISSN(ISSN):
         logger.error(err)
         return False
 
-    if ISSN is not None:
+    if ISSN is not "":
+        ISSNstr = ISSN
+        if ISSN.find(";") is not -1:
+            ISSNstr = split(ISSN=ISSN)
         try:
-            cur.execute("SELECT id from sfx where ISSN = '" + ISSN + "'")
+            stmt = "SELECT id from sfx where ISSN in ('" + ISSNstr + "') or eISSN in ('" + ISSNstr + "') and year = " + str(year)
+            if debug:
+                print (stmt)
+            cur.execute(stmt)
+            return cur.fetchall()
+        except Exception as err:
+            logger.error(err)
+            return None
+    elif ISBN is not "":
+        ISBNstr = ISBN
+        if ISBN.find(";") is not -1:
+            ISBNstr = split(ISBN=ISBN)
+        try:
+            stmt = "SELECT id from sfx where ISBN in ('" + ISBNstr + "') or eISBN in ('" + ISBNstr + "') and year = " + str(year)
+            if debug:
+                print(stmt)
+            cur.execute(stmt)
             return cur.fetchall()
         except Exception as err:
             logger.error(err)
@@ -57,6 +49,22 @@ def cmpISSN(ISSN):
     else:
         return None
 
+def split(ISSN="", ISBN=""):
+    retStr = ""
+    if ISSN is not "":
+        array = ISSN.split(";")
+        for row in array:
+            retStr += row
+            retStr += "','"
+        return retStr[0:-3]
+    elif ISBN is not "":
+        array = ISBN.split(";")
+        for row in array:
+            retStr += ISBN10to13(row)
+            retStr += "','"
+        return retStr[0:-3]
+    else:
+        return
 
 def traceback(err):
     now = time.strftime('%H:%M:%S', time.localtime(time.time()))
@@ -67,4 +75,4 @@ def traceback(err):
 if __name__ == '__main__':
     logging.config.fileConfig("../logger.conf")
     logger = logging.getLogger("root")
-    print(cmpISSN('0256-1891'))
+    cmpISSNISBN(ISSN="0000-0005;0000-0019;0512-1175;0513-1715")
