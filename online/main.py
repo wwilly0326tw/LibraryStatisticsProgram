@@ -248,7 +248,6 @@ def insertDB(row):
         conn.rollback()
         return -1
     modifyYVI(scoupusID)
-    print(str(batchID))
     return scoupusID
 
 
