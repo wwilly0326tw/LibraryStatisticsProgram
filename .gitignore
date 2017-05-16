@@ -17,3 +17,4 @@ __pycache__/DBconfig.cpython-34.pyc
 *.conf
 logger.conf
 *.pyc
+test.py

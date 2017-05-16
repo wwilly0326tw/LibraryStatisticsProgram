@@ -17,7 +17,7 @@ logging.config.fileConfig("../python/logger.conf")
 logger = logging.getLogger("root")
 FilePath = "../result/"
 InputPath = "../data/"
-toCommit = True
+toCommit = 1
 debug = 0
 
 try:
@@ -53,13 +53,13 @@ except Exception as err:
     sys.exit(-1)
 
 
-def main(filename="testdata.xlsx", year=""):
+def main(filename="scopus2016.xlsx", year=""):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     if filename is not "":
         wb = load_workbook(filename=InputPath + filename)
         ws = wb[wb.sheetnames[0]]
-        dataStr = 'A1:J' + str(ws.max_row)
+        dataStr = 'A2:J' + str(ws.max_row)
         for row in ws[dataStr]:
             if year == "":
                 year = strftime("%Y", gmtime())
@@ -67,7 +67,9 @@ def main(filename="testdata.xlsx", year=""):
             isPaid = ""
             themeIDStr = ""
             targetNameStr = ""
-            ISSN = row[8].value
+            if row[8].value is not None:
+                row[8].value = re.sub("[^0-9Xx;]", "", str(row[8].value))
+            ISSN = str(row[8].value)
             row[9].value = ISBN10to13(row[9].value)  # 去除多餘字元
             ISBN = row[9].value
 
@@ -87,6 +89,8 @@ def main(filename="testdata.xlsx", year=""):
                 sfxIDList = cmpISSNISBN(ISBN = ISBN, year = year)  # 比對到ISBN的清單
             else:
                 # ISSN ISBN 都無值
+                outputFile.write("No_Data")
+                outputFile.write('\n')
                 continue
             scopusID = insertDB(row)  # 將scopus的資料insert到DB
             if scopusID == -1:

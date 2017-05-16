@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from Program.CmpISSN.ISSN_Comp import cmpISSNISBN
-from Program.CmpInterval.cmpInterval import cmpInterval
-from Program.ISBNTransfer.ISBNTransfer import ISBN10to13
+from CmpISSN.ISSN_Comp import cmpISSNISBN
+from CmpInterval.cmpInterval import cmpInterval
+from ISBNTransfer.ISBNTransfer import ISBN10to13
 from time import gmtime, strftime
 from openpyxl import load_workbook
 from termcolor.termcolor import colored
@@ -10,7 +10,7 @@ import sys
 import logging
 import logging.config
 import mysql.connector
-import Program.DBconfig as DBconfig
+import DBconfig as DBconfig
 
 
 """此程式用於統合比對ISSN以及年卷期，回傳是否有購買此篇參考文獻"""
@@ -18,7 +18,7 @@ logging.config.fileConfig("./logger.conf")
 logger = logging.getLogger("root")
 FilePath = "./"
 InputPath = "./"
-toCommit = True
+toCommit = 0
 debug = 0
 
 try:
@@ -54,13 +54,13 @@ except Exception as err:
     sys.exit(-1)
 
 
-def main(filename="testdata.xlsx", year=""):
+def main(filename="test05_rapidILL.xlsx", year=""):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     if filename is not "":
         wb = load_workbook(filename=InputPath + filename)
         ws = wb[wb.sheetnames[0]]
-        dataStr = 'A1:J' + str(ws.max_row)
+        dataStr = 'A2:J' + str(ws.max_row)
         for row in ws[dataStr]:
             if year == "":
                 year = strftime("%Y", gmtime())
@@ -68,7 +68,9 @@ def main(filename="testdata.xlsx", year=""):
             isPaid = ""
             themeIDStr = ""
             targetNameStr = ""
-            ISSN = row[8].value
+            if row[8].value is not None:
+                row[8].value = re.sub("[^0-9Xx;]", "", str(row[8].value))
+            ISSN = str(row[8].value)
             row[9].value = ISBN10to13(row[9].value) # 去除多餘字元
             ISBN = row[9].value
 
@@ -88,6 +90,8 @@ def main(filename="testdata.xlsx", year=""):
                 sfxIDList = cmpISSNISBN(ISBN = ISBN, year = year)  # 比對到ISBN的清單
             else:
                 # ISSN ISBN 都無值
+                outputFile.write("No_Data")
+                outputFile.write('\n')
                 continue
             scopusID = insertDB(row)  # 將scopus的資料insert到DB
             if scopusID == -1:
@@ -190,7 +194,7 @@ def main(filename="testdata.xlsx", year=""):
                             print (targetNameStr)
                         logger.info('Relate target and scopus error.')
                         logger.error(err)
-            else:  # 未找到ISSN 直接結束
+            else:  # 未找到sfx 直接結束
                 if debug:
                     print(colored('ISSN/ISBN not match.', 'red'))
                 outputFile.write("Not_Found")
@@ -210,7 +214,7 @@ def main(filename="testdata.xlsx", year=""):
                         print (themeIDStr)
                         print(colored('Match.', 'yellow'))
                     outputResult(themeIDStr, targetNameStr)
-            # 有比對到ISSN但區間未比對到
+            # 有比對到ISSN/ISBN但區間未比對到
             elif isSupport == "":
                 outputFile.write("Not_Found")
             outputFile.write('\n')

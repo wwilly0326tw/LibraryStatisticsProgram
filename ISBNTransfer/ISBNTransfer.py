@@ -3,6 +3,7 @@ import re
 def ISBN10to13(ISBN="9781509010660"):
     if ISBN is None:
         return ""
+    ISBN = str(ISBN)
     if len(ISBN) > 12:
         return re.sub("[^0-9Xx;]", "", ISBN)
     ISBN = re.sub("[^0-9Xx]", "", ISBN)

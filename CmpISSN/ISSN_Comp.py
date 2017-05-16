@@ -1,8 +1,8 @@
 # -*-coding: utf-8-*-
-from Program.ISBNTransfer.ISBNTransfer import ISBN10to13
+from ISBNTransfer.ISBNTransfer import ISBN10to13
 import sys
 import time
-import Program.DBconfig as DBconfig
+import DBconfig as DBconfig
 import mysql.connector
 import logging
 import logging.config
