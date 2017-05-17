@@ -12,7 +12,14 @@ def getView(view=0, batchID=0):
     if sys.argv[2]:
         batchID = sys.argv[2]
     try:
-        outputFile = open("../result/view-" + str(view) + "-batchID-" + str(batchID) + str(".txt"), 'w+', encoding='UTF-8')
+        filename = ""
+        if view == "2":
+            filename = "支援主題排序表(" + str(batchID) + ").txt"
+        elif view == "3":
+            filename = "支援科系排序表(" + str(batchID) + ").txt"
+        elif view == "4":
+            filename = "支援院別排序表(" + str(batchID) + ").txt"
+        outputFile = open("../result/" + filename, 'w+', encoding='UTF-8')
     except Exception as err:
         print (err)
         sys.exit(-1)
@@ -40,7 +47,7 @@ def getView(view=0, batchID=0):
         outputFile.write('\t')
         outputFile.write("Theme")
         outputFile.write('\n')
-        cur.execute("select count, name from `v_journal_support_department_rank(all)` where batchID = " + str(batchID) + " order by count desc")
+        cur.execute("select count, name from `v_journal_support_department_rank(all_usesfxtodep)` where batchID = " + str(batchID) + " order by count desc")
         result = cur.fetchall()
 
     elif view == "4":
@@ -61,7 +68,7 @@ def getView(view=0, batchID=0):
             outputFile.write(str(col))
             outputFile.write('\t')
         outputFile.write('\n')
-    print ("view-" + str(view) + "-batchID-" + str(batchID))
+    print (filename)
     outputFile.close()
 
 if __name__ == '__main__':
