@@ -2,7 +2,8 @@
 if($_FILES["file"]["error"] > 0){
 	echo "Error:" . $_FILES["file"]["error"];
 } else{
-	set_time_limit(900);
+	set_time_limit(0);
+	$start = date("H:i:s");
 	echo "File Name : " . $_FILES["file"]["name"] . "<br/>";
 	move_uploaded_file($_FILES["file"]["tmp_name"], "../data/" . $_FILES["file"]["name"]);
 	exec('python ../python/main.py ' . $_FILES["file"]["name"], $ret);	
@@ -20,6 +21,14 @@ if($_FILES["file"]["error"] > 0){
 	$zip->addFile("../result/" . $filename2[0]);
 	$zip->addFile("../result/" . $filename3[0]);
 	$zip->close();
+
+	$end = date("H:i:s");
+	$diff = strtotime($start) - strtotime($end); 
+	$h = floor($diff / 3600);
+	$diff = $diff % 3600;
+	$m = floor($diff / 60);
+	$s = $diff % 60;
+	echo "執行時間：" . $h . ":" . $m . ":" . $s;
 	echo "<a href='download.php?file=Result(".$ret[0].").zip'>Result(". $ret[0] . ")</a><br>";
 }
 ?>
