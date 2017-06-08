@@ -45,7 +45,7 @@ def getView(view=0, batchID=0):
     elif view == "3":
         outputFile.write("Count")
         outputFile.write('\t')
-        outputFile.write("Theme")
+        outputFile.write("Department")
         outputFile.write('\n')
         cur.execute("select count, name from `v_journal_support_department_rank(all_usesfxtodep)` where batchID = " + str(batchID) + " order by count desc")
         result = cur.fetchall()
@@ -53,9 +53,9 @@ def getView(view=0, batchID=0):
     elif view == "4":
         outputFile.write("Count")
         outputFile.write('\t')
-        outputFile.write("Theme")
+        outputFile.write("College")
         outputFile.write('\n')
-        cur.execute("select count, name from `v_journal_support_college_rank(all)` where batchID = " + str(batchID) + " order by count desc")
+        cur.execute("select count, name from `v_journal_support_college_rank(all_sfxtodep)` where batchID = " + str(batchID) + " order by count desc")
         result = cur.fetchall()
 
     else:

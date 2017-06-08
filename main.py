@@ -19,7 +19,7 @@ logger = logging.getLogger("root")
 FilePath = "./"
 InputPath = "./"
 toCommit = 0
-debug = 0
+debug = 1
 
 try:
     conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
@@ -54,7 +54,7 @@ except Exception as err:
     sys.exit(-1)
 
 
-def main(filename="test05_rapidILL.xlsx", year=""):
+def main(filename="s2002.xlsx", year=""):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     if filename is not "":
