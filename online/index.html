@@ -1,8 +1,15 @@
 <html>
-<header>
+<head>
 	<meta charset="UTF-8"> 
-</header>
+	<script src="js/jquery-3.2.1.min.js"></script>
+	<script language="javascript">
+		window.onunload = function(){
+			$("#test").html("123");
+		}
+	</script>
+</head>
 <body>
+	<p id=test></p>
 	<form action="php/upload.php" method="post" enctype="multipart/form-data">
 		<input type="file" name="file" value="上傳檔案"></input>
 		<br>

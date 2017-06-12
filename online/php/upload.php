@@ -23,12 +23,12 @@ if($_FILES["file"]["error"] > 0){
 	$zip->close();
 
 	$end = date("H:i:s");
-	$diff = strtotime($start) - strtotime($end); 
+	$diff = strtotime($end) - strtotime($start); 
 	$h = floor($diff / 3600);
 	$diff = $diff % 3600;
 	$m = floor($diff / 60);
 	$s = $diff % 60;
-	echo "執行時間：" . $h . ":" . $m . ":" . $s;
+	echo "執行時間：" . $h . ":" . $m . ":" . $s . "<br>";
 	echo "<a href='download.php?file=Result(".$ret[0].").zip'>Result(". $ret[0] . ")</a><br>";
 }
 ?>
