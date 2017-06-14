@@ -18,7 +18,7 @@ logging.config.fileConfig("./logger.conf")
 logger = logging.getLogger("root")
 FilePath = "./"
 InputPath = "./"
-toCommit = 0
+toCommit = 1
 debug = 1
 
 try:
@@ -41,6 +41,10 @@ try:
     outputFile = open(FilePath + str(batchID) + str(".txt"), 'w+', encoding='UTF-8')
     outputFile.write('Access_Type')
     outputFile.write('\t')
+    outputFile.write('nSubscribe')
+    outputFile.write('\t')
+    outputFile.write('nFree')
+    outputFile.write('\t')
     outputFile.write('Themes')
     outputFile.write('\t')
     outputFile.write('Departments')
@@ -54,7 +58,7 @@ except Exception as err:
     sys.exit(-1)
 
 
-def main(filename="s2002.xlsx", year=""):
+def main(filename="scopus2016.xlsx", year=""):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     if filename is not "":
@@ -65,7 +69,8 @@ def main(filename="s2002.xlsx", year=""):
             if year == "":
                 year = strftime("%Y", gmtime())
             isSupport = ""
-            isPaid = ""
+            nPaid = 0
+            nFree = 0
             themeIDStr = ""
             targetNameStr = ""
             if row[8].value is not None:
@@ -90,7 +95,7 @@ def main(filename="s2002.xlsx", year=""):
                 sfxIDList = cmpISSNISBN(ISBN = ISBN, year = year)  # 比對到ISBN的清單
             else:
                 # ISSN ISBN 都無值
-                outputFile.write("No_Data")
+                outputFile.write("Null")
                 outputFile.write('\n')
                 continue
             scopusID = insertDB(row)  # 將scopus的資料insert到DB
@@ -157,9 +162,9 @@ def main(filename="s2002.xlsx", year=""):
                         try:
                             cur.execute("SELECT isfree from sfx where id = " + str(sfxID[0]))
                             if cur.fetchone()[0] == 0:
-                                isPaid = 1
-                            elif isPaid == "":
-                                isPaid = 0
+                                nPaid += 1
+                            else:
+                                nFree += 1
                         except Exception as err:
                             logger.info('paid error.')
                             logger.error(err)
@@ -202,10 +207,16 @@ def main(filename="s2002.xlsx", year=""):
                 continue
 
             if isSupport:
-                if isPaid:
+                if nPaid - nFree == nPaid:
                     outputFile.write("Subscribed")
-                else:
+                elif nFree - nPaid == nFree:
                     outputFile.write("Free")
+                else:
+                    outputFile.write("Mixed")
+                outputFile.write("\t")
+                outputFile.write(str(nPaid))
+                outputFile.write("\t")
+                outputFile.write(str(nFree))
                 outputFile.write("\t")
 
                 # 用主題串成的ID去找對應的科系及院別
