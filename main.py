@@ -71,6 +71,7 @@ def main(filename="scopus2016.xlsx", year=""):
             isSupport = ""
             nPaid = 0
             nFree = 0
+            sfxIDstr = ""
             themeIDStr = ""
             targetNameStr = ""
             if row[8].value is not None:
@@ -121,6 +122,8 @@ def main(filename="scopus2016.xlsx", year=""):
                         continue
                     # 若ISBN有值 代表此次比較是以ISBN為基準，不需要比對區間
                     if ISBN is not "" or cmpInterval(threshold, str(YVI[0]) + "." + str(YVI[1]) + "." + str(YVI[2])):
+                        sfxIDstr += str(sfxID[0])
+                        sfxIDstr += ","
                         isSupport = 1
                         try:
                             cur.execute(
@@ -224,7 +227,7 @@ def main(filename="scopus2016.xlsx", year=""):
                     if debug:
                         print (themeIDStr)
                         print(colored('Match.', 'yellow'))
-                    outputResult(themeIDStr, targetNameStr)
+                    outputResult(sfxIDstr, themeIDStr, targetNameStr)
             # 有比對到ISSN/ISBN但區間未比對到
             elif isSupport == "":
                 outputFile.write("Not_Found")
@@ -300,7 +303,7 @@ def modifyYVI(scoupusID):
             return False
 
 
-def outputResult(themeIDList, targetNameList):
+def outputResult(sfxIDList, themeIDList, targetNameList):
     # 尋找主題
     themeStr = ""
     try:
@@ -317,14 +320,14 @@ def outputResult(themeIDList, targetNameList):
     except Exception as err:
         logger.info('Search theme error.')
         logger.error(err)
-    # 尋找主題所對應的科系
+    # 尋找sfx所對應的科系
     departmentStr = ""
     collegeID = ""
     try:
         cur.execute(
-            "SELECT name, cid from department where did in (select did from relation_theme_department where tid in (" + themeIDList[
+            "SELECT name, cid from department where did in (select did from relation_sfx_department where sfxid in (" + sfxIDList[
                                                                                                                         0: len(
-                                                                                                                            themeIDList) - 1] + "))")
+                                                                                                                            sfxIDList) - 1] + "))")
         resultOfDepart = cur.fetchall()
         for depart in resultOfDepart:
             collegeID += str(depart[1])
