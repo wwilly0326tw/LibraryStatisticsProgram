@@ -58,7 +58,7 @@ except Exception as err:
     sys.exit(-1)
 
 
-def main(filename="scopus2016.xlsx", year=""):
+def main(filename="testdata.xlsx", year=""):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     if filename is not "":
@@ -208,7 +208,7 @@ def main(filename="scopus2016.xlsx", year=""):
                 outputFile.write("Not_Found")
                 outputFile.write('\n')
                 continue
-
+            insertTargetScore(targetNameStr, nPaid + nFree)
             if isSupport:
                 if nPaid - nFree == nPaid:
                     outputFile.write("Subscribed")
@@ -374,6 +374,21 @@ def outputResult(sfxIDList, themeIDList, targetNameList):
     except Exception as err:
         logger.info('Search target error.')
         logger.error(err)
+
+
+def insertTargetScore(targetNameList, nSup):
+    targetNameList = targetNameList[0:-1].split(",")
+    nSup = 1 / float(nSup)
+    for target in targetNameList:
+        try:
+            sql = "Update target set score = score + " + str(nSup) + " where name = " + target
+            if debug:
+                print (sql)
+            cur.execute("Update target set score = score + " + str(nSup) + "where name = " + target)
+        except Exception as err:
+            logger.info('Update score error.')
+            logger.error(err)
+
 
 if __name__ == '__main__':
     # main(filename="../Data/scopus/scopus.xlsx")
