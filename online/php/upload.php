@@ -7,10 +7,12 @@ if($_FILES["file"]["error"] > 0){
 	echo "File Name : " . $_FILES["file"]["name"] . "<br/>";
 	move_uploaded_file($_FILES["file"]["tmp_name"], "../data/" . $_FILES["file"]["name"]);
 	exec('python ../python/main.py ' . $_FILES["file"]["name"], $ret);	
-	exec('python ../python/GetView/getView.py 2 ' . $ret[0], $filename);
-	exec('python ../python/GetView/getView.py 3 ' . $ret[0], $filename2);
-	exec('python ../python/GetView/getView.py 4 ' . $ret[0], $filename3);
-
+	exec('python ../python/GetView/getView.py 1 ' . $ret[0], $filename);
+	exec('python ../python/GetView/getView.py 2 ' . $ret[0], $filename2);
+	exec('python ../python/GetView/getView.py 3 ' . $ret[0], $filename3);
+	exec('python ../python/GetView/getView.py 4 ' . $ret[0], $filename4);
+	exec('python ../python/GetView/getView.py 5 ' . $ret[0], $filename5);
+	exec('python ../python/ClearData/clearData.py', $re);
 	$zip = new ZipArchive();
 	$ZIPfilename = "../result/Result(" . $ret[0] . ").zip";
 	if ($zip->open($ZIPfilename, ZipArchive::CREATE)!==TRUE) {
@@ -20,6 +22,8 @@ if($_FILES["file"]["error"] > 0){
 	$zip->addFile("../result/" . $filename[0]);
 	$zip->addFile("../result/" . $filename2[0]);
 	$zip->addFile("../result/" . $filename3[0]);
+	$zip->addFile("../result/" . $filename4[0]);
+	$zip->addFile("../result/" . $filename5[0]);
 	$zip->close();
 
 	$end = date("H:i:s");

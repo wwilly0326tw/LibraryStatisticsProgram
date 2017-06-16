@@ -40,6 +40,10 @@ try:
     outputFile = open(FilePath + str(batchID) + str(".txt"), 'w+', encoding='UTF-8')
     outputFile.write('Access_Type')
     outputFile.write('\t')
+    outputFile.write('nSubscribe')
+    outputFile.write('\t')
+    outputFile.write('nFree')
+    outputFile.write('\t')
     outputFile.write('Themes')
     outputFile.write('\t')
     outputFile.write('Departments')
@@ -53,7 +57,7 @@ except Exception as err:
     sys.exit(-1)
 
 
-def main(filename="scopus2016.xlsx", year=""):
+def main(filename="testdata.xlsx", year=""):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     if filename is not "":
@@ -64,13 +68,15 @@ def main(filename="scopus2016.xlsx", year=""):
             if year == "":
                 year = strftime("%Y", gmtime())
             isSupport = ""
-            isPaid = ""
+            nPaid = 0
+            nFree = 0
+            sfxIDstr = ""
             themeIDStr = ""
             targetNameStr = ""
             if row[8].value is not None:
                 row[8].value = re.sub("[^0-9Xx;]", "", str(row[8].value))
             ISSN = str(row[8].value)
-            row[9].value = ISBN10to13(row[9].value)  # 去除多餘字元
+            row[9].value = ISBN10to13(row[9].value) # 去除多餘字元
             ISBN = row[9].value
 
             if ISSN is not None:
@@ -89,7 +95,7 @@ def main(filename="scopus2016.xlsx", year=""):
                 sfxIDList = cmpISSNISBN(ISBN = ISBN, year = year)  # 比對到ISBN的清單
             else:
                 # ISSN ISBN 都無值
-                outputFile.write("No_Data")
+                outputFile.write("Null")
                 outputFile.write('\n')
                 continue
             scopusID = insertDB(row)  # 將scopus的資料insert到DB
@@ -115,6 +121,8 @@ def main(filename="scopus2016.xlsx", year=""):
                         continue
                     # 若ISBN有值 代表此次比較是以ISBN為基準，不需要比對區間
                     if ISBN is not "" or cmpInterval(threshold, str(YVI[0]) + "." + str(YVI[1]) + "." + str(YVI[2])):
+                        sfxIDstr += str(sfxID[0])
+                        sfxIDstr += ","
                         isSupport = 1
                         try:
                             cur.execute(
@@ -156,9 +164,9 @@ def main(filename="scopus2016.xlsx", year=""):
                         try:
                             cur.execute("SELECT isfree from sfx where id = " + str(sfxID[0]))
                             if cur.fetchone()[0] == 0:
-                                isPaid = 1
-                            elif isPaid == "":
-                                isPaid = 0
+                                nPaid += 1
+                            else:
+                                nFree += 1
                         except Exception as err:
                             logger.info('paid error.')
                             logger.error(err)
@@ -193,7 +201,7 @@ def main(filename="scopus2016.xlsx", year=""):
                             print (targetNameStr)
                         logger.info('Relate target and scopus error.')
                         logger.error(err)
-            else:  # 未找到ISSN 直接結束
+            else:  # 未找到sfx 直接結束
                 if debug:
                     print(colored('ISSN/ISBN not match.', 'red'))
                 outputFile.write("Not_Found")
@@ -201,26 +209,33 @@ def main(filename="scopus2016.xlsx", year=""):
                 continue
 
             if isSupport:
-                if isPaid:
+                insertTargetScore(targetNameStr, nPaid + nFree)
+                if nPaid - nFree == nPaid:
                     outputFile.write("Subscribed")
-                else:
+                elif nFree - nPaid == nFree:
                     outputFile.write("Free")
+                else:
+                    outputFile.write("Mixed")
+                outputFile.write("\t")
+                outputFile.write(str(nPaid))
+                outputFile.write("\t")
+                outputFile.write(str(nFree))
                 outputFile.write("\t")
 
                 # 用主題串成的ID去找對應的科系及院別
                 if themeIDStr is not "":
                     if debug:
-                        print (themeIDStr)
+                        print ("Themes ID string " + themeIDStr)
                         print(colored('Match.', 'yellow'))
-                    outputResult(themeIDStr, targetNameStr)
-            # 有比對到ISSN但區間未比對到
+                    outputResult(sfxIDstr, themeIDStr, targetNameStr)
+            # 有比對到ISSN/ISBN但區間未比對到
             elif isSupport == "":
                 outputFile.write("Not_Found")
             outputFile.write('\n')
     else:
         print('Please Input the File.')
         return
-    print (batchID)
+    print(batchID)
     outputFile.close()
 
 
@@ -289,7 +304,7 @@ def modifyYVI(scoupusID):
             return False
 
 
-def outputResult(themeIDList, targetNameList):
+def outputResult(sfxIDList, themeIDList, targetNameList):
     # 尋找主題
     themeStr = ""
     try:
@@ -306,14 +321,14 @@ def outputResult(themeIDList, targetNameList):
     except Exception as err:
         logger.info('Search theme error.')
         logger.error(err)
-    # 尋找主題所對應的科系
+    # 尋找sfx所對應的科系
     departmentStr = ""
     collegeID = ""
     try:
         cur.execute(
-            "SELECT name, cid from department where did in (select did from relation_theme_department where tid in (" + themeIDList[
+            "SELECT name, cid from department where did in (select did from relation_sfx_department where sfxid in (" + sfxIDList[
                                                                                                                         0: len(
-                                                                                                                            themeIDList) - 1] + "))")
+                                                                                                                            sfxIDList) - 1] + "))")
         resultOfDepart = cur.fetchall()
         for depart in resultOfDepart:
             collegeID += str(depart[1])
@@ -360,6 +375,22 @@ def outputResult(themeIDList, targetNameList):
     except Exception as err:
         logger.info('Search target error.')
         logger.error(err)
+
+
+def insertTargetScore(targetNameList, nSup):
+    targetNameList = targetNameList[0:-1].split(",")
+    nSup = 1 / float(nSup)
+    for target in targetNameList:
+        try:
+            sql = "Update target set score = score + " + str(nSup) + " where name = " + target
+            if debug:
+                print (sql)
+            cur.execute("Update target set score = score + " + str(nSup) + "where name = " + target)
+            conn.commit()
+        except Exception as err:
+            conn.rollback()
+            logger.info('Update score error.')
+            logger.error(err)
 
 if __name__ == '__main__':
     # main(filename="../Data/scopus/scopus.xlsx")

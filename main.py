@@ -236,6 +236,7 @@ def main(filename="testdata.xlsx", year=""):
     else:
         print('Please Input the File.')
         return
+    print (batchID)
     outputFile.close()
 
 

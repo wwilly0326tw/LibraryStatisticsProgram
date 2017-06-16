@@ -13,12 +13,16 @@ def getView(view=0, batchID=0):
         batchID = sys.argv[2]
     try:
         filename = ""
-        if view == "2":
+        if view == "1":
             filename = "支援主題排序表(" + str(batchID) + ").txt"
-        elif view == "3":
+        elif view == "2":
             filename = "支援科系排序表(" + str(batchID) + ").txt"
-        elif view == "4":
+        elif view == "3":
             filename = "支援院別排序表(" + str(batchID) + ").txt"
+        elif view == "4":
+            filename = "支援資料庫排序表(" + str(batchID) + ").txt"
+        elif view == "5":
+            filename = "支援資料庫排序表(" + str(batchID) + "-Score).txt"
         outputFile = open("../result/" + filename, 'w+', encoding='UTF-8')
     except Exception as err:
         print (err)
@@ -32,32 +36,43 @@ def getView(view=0, batchID=0):
         if debug:
             print (err)
     if view == "1":
-        cur.execute("select * from `v_journal_support(all)` where batchID = " + str(batchID))
-        result = cur.fetchall()
-    elif view == "2":
-        outputFile.write("Count")
-        outputFile.write('\t')
         outputFile.write("Theme")
+        outputFile.write('\t')
+        outputFile.write("Count")
         outputFile.write('\n')
-        cur.execute("select count, name from `v_journal_support_theme_rank(all)` where batchID = " + str(batchID) + " order by count desc")
+        cur.execute("select name, count from `v_journal_support_theme_rank(all)` where batchID = " + str(batchID) + " order by count desc")
+        result = cur.fetchall()
+
+    elif view == "2":
+        outputFile.write("Department")
+        outputFile.write('\t')
+        outputFile.write("Count")
+        outputFile.write('\n')
+        cur.execute("select name, count from `v_journal_support_department_rank(all_usesfxtodep)` where batchID = " + str(batchID) + " order by count desc")
         result = cur.fetchall()
 
     elif view == "3":
-        outputFile.write("Count")
+        outputFile.write("College")
         outputFile.write('\t')
-        outputFile.write("Department")
+        outputFile.write("Count")
         outputFile.write('\n')
-        cur.execute("select count, name from `v_journal_support_department_rank(all_usesfxtodep)` where batchID = " + str(batchID) + " order by count desc")
+        cur.execute("select name, count from `v_journal_support_college_rank(all_sfxtodep)` where batchID = " + str(batchID) + " order by count desc")
         result = cur.fetchall()
 
     elif view == "4":
-        outputFile.write("Count")
+        outputFile.write("Target")
         outputFile.write('\t')
-        outputFile.write("College")
+        outputFile.write("Count")
         outputFile.write('\n')
-        cur.execute("select count, name from `v_journal_support_college_rank(all_sfxtodep)` where batchID = " + str(batchID) + " order by count desc")
+        cur.execute("select name, count from `v_journal_support_target_rank(all)` where batchID = " + str(batchID) + " order by count desc")
         result = cur.fetchall()
-
+    elif view == "5":
+        outputFile.write("Target")
+        outputFile.write('\t')
+        outputFile.write("Score")
+        outputFile.write('\n')
+        cur.execute("select name, score from `v_journal_support_target_rank(all_score)`")
+        result = cur.fetchall()
     else:
         if debug:
             print ("Error View Type.")
