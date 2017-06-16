@@ -208,8 +208,9 @@ def main(filename="testdata.xlsx", year=""):
                 outputFile.write("Not_Found")
                 outputFile.write('\n')
                 continue
-            insertTargetScore(targetNameStr, nPaid + nFree)
+
             if isSupport:
+                insertTargetScore(targetNameStr, nPaid + nFree)
                 if nPaid - nFree == nPaid:
                     outputFile.write("Subscribed")
                 elif nFree - nPaid == nFree:
@@ -225,7 +226,7 @@ def main(filename="testdata.xlsx", year=""):
                 # 用主題串成的ID去找對應的科系及院別
                 if themeIDStr is not "":
                     if debug:
-                        print (themeIDStr)
+                        print ("Themes ID string " + themeIDStr)
                         print(colored('Match.', 'yellow'))
                     outputResult(sfxIDstr, themeIDStr, targetNameStr)
             # 有比對到ISSN/ISBN但區間未比對到
@@ -385,10 +386,11 @@ def insertTargetScore(targetNameList, nSup):
             if debug:
                 print (sql)
             cur.execute("Update target set score = score + " + str(nSup) + "where name = " + target)
+            conn.commit()
         except Exception as err:
+            conn.rollback()
             logger.info('Update score error.')
             logger.error(err)
-
 
 if __name__ == '__main__':
     # main(filename="../Data/scopus/scopus.xlsx")
