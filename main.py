@@ -18,7 +18,7 @@ logging.config.fileConfig("./logger.conf")
 logger = logging.getLogger("root")
 FilePath = "./"
 InputPath = "./"
-toCommit = 1
+toCommit = 0
 debug = 1
 
 try:
@@ -62,6 +62,7 @@ def main(filename="testdata.xlsx", year=""):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
     if filename is not "":
+        threadCounter(0)
         wb = load_workbook(filename=InputPath + filename)
         ws = wb[wb.sheetnames[0]]
         dataStr = 'A2:J' + str(ws.max_row)
@@ -238,6 +239,7 @@ def main(filename="testdata.xlsx", year=""):
         return
     print (batchID)
     outputFile.close()
+    threadCounter(1)
 
 
 def insertDB(row):
@@ -392,6 +394,20 @@ def insertTargetScore(targetNameList, nSup):
             conn.rollback()
             logger.info('Update score error.')
             logger.error(err)
+
+def threadCounter(out):
+    try:
+        nThread = open('flag', 'r')
+        flag = int(nThread.read())
+        if out:
+            flag -= 1
+        else:
+            flag += 1
+        file = open("flag", 'w')
+        file.write(str(flag))
+    except Exception as err:
+        logger.error(err)
+        sys.exit(-1)
 
 if __name__ == '__main__':
     # main(filename="../Data/scopus/scopus.xlsx")

@@ -27,3 +27,5 @@ DumpData/scopus.csv
 *.csv
 *.csv
 DumpData/scopus.csv
+flag
+*.csv
