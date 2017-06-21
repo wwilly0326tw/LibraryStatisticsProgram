@@ -14,10 +14,17 @@ if($_FILES["file"]["error"] > 0){
 	exec('python ../python/GetView/getView.py 5 ' . $ret[0], $filename5);
 	exec('python ../python/ClearData/clearData.py', $re);
 	$zip = new ZipArchive();
-	$ZIPfilename = "../result/Result(" . $ret[0] . ").zip";
-	if ($zip->open($ZIPfilename, ZipArchive::CREATE)!==TRUE) {
-    	exit("cannot open <$filename>\n");
+	$ZIPfilename = "../result/Result-" . $_FILES["file"]["name"] . ".zip";
+	if ($res = $zip->open($ZIPfilename, ZipArchive::CREATE)!==TRUE) {
+		switch ($res) {
+			case ZipArchive::ER_EXISTS:
+				$zip->open($ZIPfilename, ZipArchive::OVERWRITE);
+				break;
+			default:
+				break;
+		}
 	}
+
 	$zip->addFile("../result/" . $ret[0] . ".txt");
 	$zip->addFile("../result/" . $filename[0]);
 	$zip->addFile("../result/" . $filename2[0]);
@@ -33,6 +40,6 @@ if($_FILES["file"]["error"] > 0){
 	$m = floor($diff / 60);
 	$s = $diff % 60;
 	echo "執行時間：" . $h . ":" . $m . ":" . $s . "<br>";
-	echo "<a href='download.php?file=Result(".$ret[0].").zip'>Result(". $ret[0] . ")</a><br>";
+	echo "<a href='download.php?file=Result-" . $_FILES["file"]["name"] . ".zip'>Result-". $_FILES["file"]["name"] . "</a><br>";
 }
 ?>
