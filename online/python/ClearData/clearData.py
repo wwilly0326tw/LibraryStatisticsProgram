@@ -16,6 +16,8 @@ except Exception as err:
     sys.exit(-1)
 
 def clearData():
+    if checkThreadCount():
+        return
     try:
         cur.execute("Update target set score = 0")
         if toCommit:
@@ -33,5 +35,14 @@ def clearData():
         logger.info('Delete Scopus error.')
         logger.error(err)
     return 1
+
+def checkThreadCount():
+    try:
+        nThread = open('../python/flag', 'r')
+        flag = int(nThread.read())
+        return flag
+    except Exception as err:
+        logger.error(err)
+        sys.exit(-1)
 if __name__ == '__main__':
     clearData()

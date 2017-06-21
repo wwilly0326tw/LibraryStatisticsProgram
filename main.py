@@ -403,8 +403,9 @@ def threadCounter(out):
             flag -= 1
         else:
             flag += 1
-        file = open("flag", 'w')
-        file.write(str(flag))
+        nThread = open("flag", 'w')
+        nThread.write(str(flag))
+        nThread.close()
     except Exception as err:
         logger.error(err)
         sys.exit(-1)
