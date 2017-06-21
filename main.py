@@ -18,7 +18,7 @@ logging.config.fileConfig("./logger.conf")
 logger = logging.getLogger("root")
 FilePath = "./"
 InputPath = "./"
-toCommit = 0
+toCommit = 1
 debug = 1
 
 try:
@@ -366,7 +366,10 @@ def outputResult(sfxIDList, themeIDList, targetNameList):
     targetNameStr = ""
     try:
         cur.execute("SELECT name from target where name in (" + targetNameList[0: len(targetNameList) - 1] + ")")
+        if debug:
+            print (targetNameList)
         resultOfTarget = cur.fetchall()
+        print (resultOfTarget)
         for target in resultOfTarget:
             targetNameStr += target[0]
             targetNameStr += "|"

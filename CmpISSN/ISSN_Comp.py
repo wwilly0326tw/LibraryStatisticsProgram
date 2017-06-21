@@ -8,9 +8,9 @@ import logging
 import logging.config
 
 """Input ISSN 或 ISBN 數組，比較相同的SFX資料回傳"""
-debug = 0
+debug = 1
 
-def cmpISSNISBN(ISSN="", ISBN="", year=""):
+def cmpISSNISBN(ISSN="00189294", ISBN="", year="2017"):
     logger = logging.getLogger("root")
     try:
         conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
@@ -25,7 +25,7 @@ def cmpISSNISBN(ISSN="", ISBN="", year=""):
         if ISSN.find(";") is not -1:
             ISSNstr = split(ISSN=ISSN)
         try:
-            stmt = "SELECT id from sfx where ISSN in ('" + ISSNstr + "') or eISSN in ('" + ISSNstr + "') and year = " + str(year)
+            stmt = "SELECT id from sfx where year = " + str(year) + " and ISSN in ('" + ISSNstr + "') or eISSN in ('" + ISSNstr + "')"
             if debug:
                 print (stmt)
             cur.execute(stmt)
