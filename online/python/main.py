@@ -226,11 +226,10 @@ def main(filename="testdata.xlsx", year=""):
                 outputFile.write("\t")
 
                 # 用主題串成的ID去找對應的科系及院別
-                if themeIDStr is not "":
-                    if debug:
-                        print ("Themes ID string " + themeIDStr)
-                        print(colored('Match.', 'yellow'))
-                    outputResult(sfxIDstr, themeIDStr, targetNameStr)
+                if debug:
+                    print("Themes ID string " + themeIDStr)
+                    print(colored('Match.', 'yellow'))
+                outputResult(sfxIDstr, themeIDStr, targetNameStr)
             # 有比對到ISSN/ISBN但區間未比對到
             elif isSupport == "":
                 outputFile.write("Not_Found")
@@ -310,76 +309,81 @@ def modifyYVI(scoupusID):
 
 def outputResult(sfxIDList, themeIDList, targetNameList):
     # 尋找主題
-    themeStr = ""
-    try:
-        cur.execute("SELECT name from theme where tid in (" + themeIDList[0: len(themeIDList) - 1] + ")")
-        resultOfTheme = cur.fetchall()
-        for theme in resultOfTheme:
-            themeStr += theme[0]
-            themeStr += "|"
-        themeStr = themeStr[0: len(themeStr) - 1]
-        if debug:
-            print(themeStr)
-        outputFile.write(themeStr)
-        outputFile.write('\t')
-    except Exception as err:
-        logger.info('Search theme error.')
-        logger.error(err)
+    if themeIDList is not "":
+        themeStr = ""
+        try:
+            cur.execute("SELECT name from theme where tid in (" + themeIDList[0: len(themeIDList) - 1] + ")")
+            resultOfTheme = cur.fetchall()
+            for theme in resultOfTheme:
+                themeStr += theme[0]
+                themeStr += "|"
+            themeStr = themeStr[0: len(themeStr) - 1]
+            if debug:
+                print(themeStr)
+            outputFile.write(themeStr)
+        except Exception as err:
+            logger.info('Search theme error.')
+            logger.error(err)
+    outputFile.write('\t')
     # 尋找sfx所對應的科系
-    departmentStr = ""
-    collegeID = ""
-    try:
-        cur.execute(
-            "SELECT name, cid from department where did in (select did from relation_sfx_department where sfxid in (" + sfxIDList[
-                                                                                                                        0: len(
-                                                                                                                            sfxIDList) - 1] + "))")
-        resultOfDepart = cur.fetchall()
-        for depart in resultOfDepart:
-            collegeID += str(depart[1])
-            collegeID += ","
-            departmentStr += depart[0]
-            departmentStr += "|"
-        departmentStr = departmentStr[0: len(departmentStr) - 1]
-        if debug:
-            print(departmentStr)
-        outputFile.write(departmentStr)
-        outputFile.write('\t')
-    except Exception as err:
-        logger.info('Search department error.')
-        logger.error(err)
+    if sfxIDList is not "":
+        departmentStr = ""
+        collegeID = ""
+        try:
+            cur.execute(
+                "SELECT name, cid from department where did in (select did from relation_sfx_department where sfxid in (" + sfxIDList[
+                                                                                                                            0: len(
+                                                                                                                                sfxIDList) - 1] + "))")
+            resultOfDepart = cur.fetchall()
+            for depart in resultOfDepart:
+                collegeID += str(depart[1])
+                collegeID += ","
+                departmentStr += depart[0]
+                departmentStr += "|"
+            departmentStr = departmentStr[0: len(departmentStr) - 1]
+            if debug:
+                print(departmentStr)
+            outputFile.write(departmentStr)
+        except Exception as err:
+            logger.info('Search department error.')
+            logger.error(err)
+    outputFile.write('\t')
     # 尋找科系所對應的院
-    collegeStr = ""
-    try:
-        cur.execute("SELECT name from college where cid in (" + collegeID[0: len(collegeID) - 1] + ")")
-        resultOfCollege = cur.fetchall()
-        for college in resultOfCollege:
-            collegeStr += college[0]
-            collegeStr += "|"
-        collegeStr = collegeStr[0: len(collegeStr) - 1]
-        if debug:
-            print(collegeStr)
-        outputFile.write(collegeStr)
-        outputFile.write('\t')
-    except Exception as err:
-        logger.info('Search college error.')
-        logger.error(err)
+    if collegeID is not "":
+        collegeStr = ""
+        try:
+            cur.execute("SELECT name from college where cid in (" + collegeID[0: len(collegeID) - 1] + ")")
+            resultOfCollege = cur.fetchall()
+            for college in resultOfCollege:
+                collegeStr += college[0]
+                collegeStr += "|"
+            collegeStr = collegeStr[0: len(collegeStr) - 1]
+            if debug:
+                print(collegeStr)
+            outputFile.write(collegeStr)
+        except Exception as err:
+            logger.info('Search college error.')
+            logger.error(err)
+    outputFile.write('\t')
     # 尋找對應的Target
-    targetNameStr = ""
-    try:
-        cur.execute("SELECT name from target where name in (" + targetNameList[0: len(targetNameList) - 1] + ")")
-        resultOfTarget = cur.fetchall()
-        for target in resultOfTarget:
-            targetNameStr += target[0]
-            targetNameStr += "|"
-        targetNameStr = targetNameStr[0: len(targetNameStr) - 1]
-        if debug:
-            print(targetNameStr)
-        outputFile.write(targetNameStr)
-        outputFile.write('\t')
-    except Exception as err:
-        logger.info('Search target error.')
-        logger.error(err)
-
+    if targetNameList is not "":
+        targetNameStr = ""
+        try:
+            cur.execute("SELECT name from target where name in (" + targetNameList[0: len(targetNameList) - 1] + ")")
+            if debug:
+                print (targetNameList)
+            resultOfTarget = cur.fetchall()
+            if debug:
+                print (resultOfTarget)
+            for target in resultOfTarget:
+                targetNameStr += target[0]
+                targetNameStr += "|"
+            targetNameStr = targetNameStr[0: len(targetNameStr) - 1]
+            outputFile.write(targetNameStr)
+        except Exception as err:
+            logger.info('Search target error.')
+            logger.error(err)
+    outputFile.write('\t')
 
 def insertTargetScore(targetNameList, nSup):
     targetNameList = targetNameList[0:-1].split(",")
