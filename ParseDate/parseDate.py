@@ -4,7 +4,7 @@ import time
 import mysql.connector
 import logging
 import logging.config
-import Program.DBconfig as DBconfig
+import DBconfig as DBconfig
 
 """處理給予的檔案或是字串，回傳結構化的區間資料(input string) 或輸出成result.txt(input file)"""
 

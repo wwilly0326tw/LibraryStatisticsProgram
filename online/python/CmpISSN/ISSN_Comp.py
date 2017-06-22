@@ -25,7 +25,8 @@ def cmpISSNISBN(ISSN="", ISBN="", year=""):
         if ISSN.find(";") is not -1:
             ISSNstr = split(ISSN=ISSN)
         try:
-            stmt = "SELECT id from sfx where ISSN in ('" + ISSNstr + "') or eISSN in ('" + ISSNstr + "') and year = " + str(year)
+            stmt = "SELECT id from sfx where year = " + str(
+                year) + " and ISSN in ('" + ISSNstr + "') or eISSN in ('" + ISSNstr + "')"
             if debug:
                 print (stmt)
             cur.execute(stmt)

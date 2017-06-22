@@ -1,6 +1,6 @@
 <html>
 <head>
-	<meta charset="UTF-8"> 
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<script src="js/jquery-3.2.1.min.js"></script>
 	<script language="javascript">
 		window.onunload = function(){
@@ -9,10 +9,56 @@
 	</script>
 </head>
 <body>
-	<p id=test></p>
 	<form action="php/upload.php" method="post" enctype="multipart/form-data">
-		<input type="file" name="file" value="上傳檔案"></input>
+		<t1>比對檔案</t1>
 		<br>
+		<input type="file" name="file" value="上傳檔案"></input>
+		<t1>比對年分</t1>
+		<select name="year">
+			<option value="" selected="selected">--</option>	
+			<option value="2016">2016</option>
+			<option value="2017">2017</option>
+			<option value="2018">2018</option>
+			<option value="2019">2019</option>
+		</select>
+		<input type="submit" name"submit" value="送出"</input>
+	</form>
+	<form action="php/update.php" method="post" enctype="multipart/form-data">
+		<t1>上傳SFX及主題表</t1>
+		<br>
+		<input type="file" name="sfx" value="上傳檔案"></input>
+		<input type="file" name="theme" value="上傳檔案"></input>
+		<select name="year">
+			<option value="" selected="selected">--</option>
+			<option value="2016">2016</option>
+			<option value="2017">2017</option>
+			<option value="2018">2018</option>
+			<option value="2019">2019</option>
+		</select>
+		<input type="submit" name"submit" value="送出"</input>
+	</form>
+	<form action="php/delete.php" method="post" enctype="multipart/form-data">
+		<t1>刪除SFX</t1>
+		<br>
+		<select name="year">
+			<option value="" selected="selected">--</option>
+			<option value="2016">2016</option>
+			<option value="2017">2017</option>
+			<option value="2018">2018</option>
+			<option value="2019">2019</option>
+		</select>
+		<input type="submit" name"submit" value="送出"</input>
+	</form>
+	<form action="php/query.php" method="post" enctype="multipart/form-data">
+		<t1>查詢不支援主題年分</t1>
+		<br>	
+		<select name="year">
+			<option value="" selected="selected">--</option>
+			<option value="2016">2016</option>
+			<option value="2017">2017</option>
+			<option value="2018">2018</option>
+			<option value="2019">2019</option>
+		</select>
 		<input type="submit" name"submit" value="送出"</input>
 	</form>
 </body>

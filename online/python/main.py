@@ -60,6 +60,8 @@ except Exception as err:
 def main(filename="testdata.xlsx", year=""):
     if len(sys.argv) > 1:
         filename = sys.argv[1]
+    if len(sys.argv) > 2:
+        year = sys.argv[2]
     if filename is not "":
         threadCounter(0)
         wb = load_workbook(filename=InputPath + filename)

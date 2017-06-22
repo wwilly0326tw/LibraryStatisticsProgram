@@ -6,7 +6,7 @@ if($_FILES["file"]["error"] > 0){
 	$start = date("H:i:s");
 	echo "File Name : " . $_FILES["file"]["name"] . "<br/>";
 	move_uploaded_file($_FILES["file"]["tmp_name"], "../data/" . $_FILES["file"]["name"]);
-	exec('python ../python/main.py ' . $_FILES["file"]["name"], $ret);	
+	exec('python ../python/main.py ' . $_FILES["file"]["name"] . ' ' . $_POST['year'], $ret);
 	exec('python ../python/GetView/getView.py 1 ' . $ret[0], $filename);
 	exec('python ../python/GetView/getView.py 2 ' . $ret[0], $filename2);
 	exec('python ../python/GetView/getView.py 3 ' . $ret[0], $filename3);

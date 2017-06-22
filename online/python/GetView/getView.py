@@ -1,3 +1,4 @@
+# coding=utf-8
 import DBconfig as DBconfig
 import mysql.connector
 import sys
@@ -6,11 +7,13 @@ import sys
 
 debug = 1
 
-def getView(view=0, batchID=0):
-    if sys.argv[1]:
+def getView(view=0, batchID=0, year=""):
+    if len(sys.argv) > 1:
         view = sys.argv[1]
-    if sys.argv[2]:
+    if len(sys.argv) > 2:
         batchID = sys.argv[2]
+    if len(sys.argv) > 3:
+        year = sys.argv[3]
     try:
         filename = ""
         if view == "1":
@@ -23,6 +26,8 @@ def getView(view=0, batchID=0):
             filename = "支援資料庫排序表(" + str(batchID) + ").txt"
         elif view == "5":
             filename = "支援資料庫排序表(" + str(batchID) + "-Score).txt"
+        elif view == "6":
+            filename = "NMatchThemes.txt"
         outputFile = open("../result/" + filename, 'w+', encoding='UTF-8')
     except Exception as err:
         print (err)
@@ -72,6 +77,11 @@ def getView(view=0, batchID=0):
         outputFile.write("Score")
         outputFile.write('\n')
         cur.execute("select name, score from `v_journal_support_target_rank(all_score)`")
+        result = cur.fetchall()
+    elif view == "6":
+        outputFile.write("Theme")
+        outputFile.write('\n')
+        cur.execute("select name from `v_nmatchtheme(all)` where year = " + str(year))
         result = cur.fetchall()
     else:
         if debug:

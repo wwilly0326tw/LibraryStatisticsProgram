@@ -2,13 +2,18 @@ import DBconfig as DBconfig
 import mysql.connector
 import logging
 import logging.config
+import sys
 
-""" 程式用途為更新sfx to dep 的relation """
+ifCommit = 0
 
-def relate_SFX_Depart(year = ""):
+""" 程式功能為刪除某一年相關的所有資料(sfx、theme、rel_theme_dep、rel_sfx_theme、rel_sfx_dep、support) """
+
+def deleteData(year = ""):
+    if len(sys.argv) > 1:
+        year = sys.argv[1]
     if year == "":
         return False
-    logging.config.fileConfig("../logger.conf")
+    logging.config.fileConfig("../python/ogger.conf")
     logger = logging.getLogger("root")
     try:
         conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
@@ -19,13 +24,13 @@ def relate_SFX_Depart(year = ""):
         return False
 
     try:
-        stmt = "insert relation_sfx_department select a.id as sfxid, c.did as did from sfx a, relation_sfx_theme b,relation_theme_department c, department d where a.year = " + str(year) + " and a.id = b.sfxid and b.tid = c.tid and c.did = d.did group by did, id"
-        cur.execute(stmt)
-        conn.commit()
+        cur.execute("delete from sfx where year = " + str(year))
+        cur.execute("delete from theme where year = " + str(year))
+        if ifCommit:
+            conn.commit()
     except Exception as err:
-        print (stmt)
         logger.error(err)
         conn.rollback()
 
 if __name__ == '__main__':
-    relate_SFX_Depart()
+    deleteData()
