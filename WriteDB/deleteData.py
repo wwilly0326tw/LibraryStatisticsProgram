@@ -1,4 +1,4 @@
-import Program.DBconfig as DBconfig
+import DBconfig as DBconfig
 import mysql.connector
 import logging
 import logging.config

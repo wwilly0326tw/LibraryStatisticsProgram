@@ -6,7 +6,7 @@ import logging.config
 
 """ 程式用途為將主題名稱寫入資料庫，以及建立主題與對應科系的關聯 """
 
-def relate_Theme_Department(filename=""):
+def relate_Theme_Department(filename="", year=""):
     if filename is "":
         print ("Please Input a file.")
         return False
@@ -25,7 +25,7 @@ def relate_Theme_Department(filename=""):
         logger.error(err)
         return False
 
-    insertStmt = "insert into theme(name) values (%s)"
+    insertStmt = "insert into theme(name, year) values (%s, %s)"
 
     wb = load_workbook(filename=filename, read_only=True)
     ws = wb[wb.sheetnames[0]]
@@ -40,7 +40,7 @@ def relate_Theme_Department(filename=""):
         valStr += "/"
         valStr += row[4].value[row[4].value.find(' ') + 1:]
         try:
-            cur.execute(insertStmt, (valStr, ))
+            cur.execute(insertStmt, (valStr, year))
             conn.commit()
         except Exception as err:
             print(insertStmt + valStr)
