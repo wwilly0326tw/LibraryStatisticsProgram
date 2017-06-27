@@ -17,7 +17,7 @@ import DBconfig as DBconfig
 """ 建置資料流程 """
 logging.config.fileConfig("../logger.conf")
 logger = logging.getLogger("root")
-toCommit = 0
+toCommit = 1
 debug = 1
 
 try:
@@ -40,63 +40,63 @@ def main(sfxFileName="", themeFileName="", departFileName="", year=""):
     if year == "":
         year = strftime("%Y", gmtime())
     # 先將每次的sfx寫入DB(程式給定年分) writeSFXtoDB
-    # if sfxFileName is not "" and not None:
-    #     writeSFX2DB(sfxFileName, year)
+    if sfxFileName is not "" and not None:
+        writeSFX2DB(sfxFileName, year)
 
-    # # 將sfx的Threshold轉成結構化的資料 parseDate
-    # try:
-    #     cur.execute("SELECT id, Threshold from sfx where year = " + year)
-    #     resultOfSFX = cur.fetchall()
-    #     for row in resultOfSFX:
-    #         parsedInterval = extractInterval(row[1])
-    #         try:
-    #             stmt = "UPDATE sfx set Threshold = '" + parsedInterval + "' where id = " + str(row[0])
-    #             if debug:
-    #                 print (stmt)
-    #             cur.execute(stmt)
-    #             if toCommit:
-    #                 conn.commit()
-    #         except Exception as err:
-    #             conn.rollback()
-    #             logger.info('Update Threshold error.')
-    #             logger.error(err)
-    #             continue
-    # except Exception as err:
-    #     logger.info('Get Threshold error.')
-    #     logger.error(err)
-    #     return
-    #
-    # # 將sfx的ISBN都轉成13碼
-    # try:
-    #     cur.execute("SELECT id, ISBN, eISBN from sfx where year = " + year)
-    #     resultOfSFX = cur.fetchall()
-    #     for row in resultOfSFX:
-    #         ISBN = ISBN10to13(row[1])
-    #         eISBN = ISBN10to13(row[2])
-    #         try:
-    #             stmt = "UPDATE sfx set ISBN = '" + ISBN + "', eISBN = '" + eISBN + "' where id = " + str(row[0])
-    #             if debug:
-    #                 print (stmt)
-    #             cur.execute(stmt)
-    #             if toCommit:
-    #                 conn.commit()
-    #         except Exception as err:
-    #             conn.rollback()
-    #             logger.info('Update ISBN error.')
-    #             logger.error(err)
-    #             continue
-    # except Exception as err:
-    #     logger.info('Get ISBN error.')
-    #     logger.error(err)
-    #     return
-    #
-    # # 若要更新Department(寫入未在table內的) writeDepartment (此程式尚未完成)
-    # # if departFileName is not "" and not None:
-    # #     writeDepartment(departFileName)
-    #
-    # # 建立Theme與Depart的relation relate_Theme_Depart
-    # if themeFileName is not "" and not None:
-    #     relate_Theme_Department(themeFileName, year)
+    # 將sfx的Threshold轉成結構化的資料 parseDate
+    try:
+        cur.execute("SELECT id, Threshold from sfx where year = " + year)
+        resultOfSFX = cur.fetchall()
+        for row in resultOfSFX:
+            parsedInterval = extractInterval(row[1])
+            try:
+                stmt = "UPDATE sfx set Threshold = '" + parsedInterval + "' where id = " + str(row[0])
+                if debug:
+                    print (stmt)
+                cur.execute(stmt)
+                if toCommit:
+                    conn.commit()
+            except Exception as err:
+                conn.rollback()
+                logger.info('Update Threshold error.')
+                logger.error(err)
+                continue
+    except Exception as err:
+        logger.info('Get Threshold error.')
+        logger.error(err)
+        return
+
+    # 將sfx的ISBN都轉成13碼
+    try:
+        cur.execute("SELECT id, ISBN, eISBN from sfx where year = " + year)
+        resultOfSFX = cur.fetchall()
+        for row in resultOfSFX:
+            ISBN = ISBN10to13(row[1])
+            eISBN = ISBN10to13(row[2])
+            try:
+                stmt = "UPDATE sfx set ISBN = '" + ISBN + "', eISBN = '" + eISBN + "' where id = " + str(row[0])
+                if debug:
+                    print (stmt)
+                cur.execute(stmt)
+                if toCommit:
+                    conn.commit()
+            except Exception as err:
+                conn.rollback()
+                logger.info('Update ISBN error.')
+                logger.error(err)
+                continue
+    except Exception as err:
+        logger.info('Get ISBN error.')
+        logger.error(err)
+        return
+
+    # 若要更新Department(寫入未在table內的) writeDepartment (此程式尚未完成)
+    # if departFileName is not "" and not None:
+    #     writeDepartment(departFileName)
+
+    # 建立Theme與Depart的relation relate_Theme_Depart
+    if themeFileName is not "" and not None:
+        relate_Theme_Department(themeFileName, year)
 
     # 將sfx分類至各theme(須給年分，預設處理今年) classifyCategory
     classify(year=year)

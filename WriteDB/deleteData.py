@@ -33,4 +33,4 @@ def deleteData(year = ""):
         conn.rollback()
 
 if __name__ == '__main__':
-    deleteData()
+    deleteData(2016)

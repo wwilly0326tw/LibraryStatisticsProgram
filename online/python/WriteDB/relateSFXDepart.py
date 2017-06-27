@@ -8,7 +8,7 @@ import logging.config
 def relate_SFX_Depart(year = ""):
     if year == "":
         return False
-    logging.config.fileConfig("../logger.conf")
+    logging.config.fileConfig("../python/logger.conf")
     logger = logging.getLogger("root")
     try:
         conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,

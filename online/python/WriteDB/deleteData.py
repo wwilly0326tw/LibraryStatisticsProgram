@@ -4,7 +4,7 @@ import logging
 import logging.config
 import sys
 
-ifCommit = 0
+ifCommit = 1
 
 """ 程式功能為刪除某一年相關的所有資料(sfx、theme、rel_theme_dep、rel_sfx_theme、rel_sfx_dep、support) """
 
@@ -13,7 +13,7 @@ def deleteData(year = ""):
         year = sys.argv[1]
     if year == "":
         return False
-    logging.config.fileConfig("../python/ogger.conf")
+    logging.config.fileConfig("../python/logger.conf")
     logger = logging.getLogger("root")
     try:
         conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,

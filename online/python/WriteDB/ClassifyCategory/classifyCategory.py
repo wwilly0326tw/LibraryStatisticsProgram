@@ -9,7 +9,7 @@ from time import gmtime, strftime
 
 """ 將SFX中的主題分類建立與table Theme 的relation, 輸入sfxID將此ID建立分類關聯 或 將資料庫中未建立關聯的都跑過一遍  """
 
-logging.config.fileConfig("../logger.conf")
+logging.config.fileConfig("../python/logger.conf")
 logger = logging.getLogger("root")
 
 try:

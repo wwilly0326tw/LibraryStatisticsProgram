@@ -10,7 +10,7 @@ import logging.config
 def writeDepartment(filename = ""):
     if filename == "":
         return False
-    logging.config.fileConfig("../logger.conf")
+    logging.config.fileConfig("../python/logger.conf")
     logger = logging.getLogger("root")
     try:
         conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
