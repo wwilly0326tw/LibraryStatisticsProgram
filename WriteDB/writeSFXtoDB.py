@@ -31,11 +31,13 @@ def writeSFX2DB(filename="", year=""):
     for row in ws['A2:AO' + str(ws.max_row)]:
         valStr = ""
         ISSN = row[3].value
-        ISSN = ISSN.replace("-", "")
-        row[3].value = ISSN
+        if ISSN is not None:
+            ISSN = ISSN.replace("-", "")
+            row[3].value = ISSN
         eISSN = row[7].value
-        eISSN = eISSN.replace("-", "")
-        row[7].value = eISSN
+        if eISSN is not None:
+            eISSN = eISSN.replace("-", "")
+            row[7].value = eISSN
         for col in row:
             if col.value is None:
                 valStr += 'NULL'

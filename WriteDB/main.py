@@ -104,5 +104,5 @@ def main(sfxFileName="", themeFileName="", departFileName="", year=""):
     # 更新SFX與Department的relation(須給年分，預設空值) relateSFXDepart
     relate_SFX_Depart(year=year)
 if __name__ == '__main__':
-    main(sfxFileName="../../Data/SFX/testsfx.xlsx", themeFileName="../../Data/SFX/1051219sfx主題分類-學院系所對照.xlsx", year="2015")
+    main(sfxFileName="../../Data/SFX/sfx2016.xlsx", themeFileName="../../Data/SFX/1051219sfx主題分類-學院系所對照.xlsx", year="2018")
     # main(sfxFileName="../../Data/SFX/20170421SFX_adv_both_both.xlsx", themeFileName="..\..\Data\SFX\\1051219sfx主題分類-學院系所對照.xlsx")
