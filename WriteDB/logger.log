@@ -1,1 +1,2 @@
 Mon, 26 Jun 2017 18:09:11 deleteData.py[line:32] ERROR 1205 (HY000): Lock wait timeout exceeded; try restarting transaction
+Thu, 29 Jun 2017 11:41:56 writeSFXtoDB.py[line:59] ERROR 1406 (22001): Data too long for column 'ISSN' at row 1

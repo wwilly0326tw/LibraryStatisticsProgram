@@ -19,7 +19,7 @@ def getView(view=0, batchID=0, year=""):
         if view == "1":
             filename = "支援主題排序表(" + str(batchID) + ").txt"
         elif view == "2":
-            filename = "支援科系排序表(" + str(batchID) + ").txt"
+            filename = "支援系所排序表(" + str(batchID) + ").txt"
         elif view == "3":
             filename = "支援院別排序表(" + str(batchID) + ").txt"
         elif view == "4":
