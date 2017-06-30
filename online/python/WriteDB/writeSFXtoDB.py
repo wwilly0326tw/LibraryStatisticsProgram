@@ -6,7 +6,6 @@ import logging
 import logging.config
 
 debug = 0
-filename = "../data/" + filename
 logging.config.fileConfig("../python/logger.conf")
 logger = logging.getLogger("root")
 
@@ -22,6 +21,9 @@ def writeSFX2DB(filename="", year=""):
     if filename is "":
         print ("Please Input a file.")
         return False
+    filename = "../data/" + filename
+
+
 
     sqlStmt = "insert into sfx(SortableTitle,Title,TitleNon‐FilingCharacter,ISSN,ObjectID,TargetPublicName,Threshold,Eissn,AbbreviatedTitle,TargetServiceType,LCCN,ObjectPortfolioID,856‐u,856‐y,856‐a,245_h,LocalThreshold,GlobalThreshold,TargetID,TargetServiceID,ObjectPortfolio_ID,Categories,LocalAttribute,ISBN,eISBN,Publisher,PlaceofPublication,DateofPublication,ObjectType,ActivationstatusfortheDEFAULTinstitute,InstituteID,InstituteName,InstituteAvailability,Language,MainTitle,FullOriginalTitle,AdditionalISBNs,AdditionaleISBNs,Author,Owner,THRESHOLD_LOCAL, isFree, year) values ("
 
@@ -39,6 +41,7 @@ def writeSFX2DB(filename="", year=""):
             eISSN = eISSN.replace("-", "")
             row[7].value = eISSN
         checkTargetinDB(row[5].value)
+
         for col in row:
             if col.value is None:
                 valStr += 'NULL'

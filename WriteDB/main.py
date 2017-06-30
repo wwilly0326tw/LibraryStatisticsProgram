@@ -49,18 +49,19 @@ def main(sfxFileName="", themeFileName="", departFileName="", year=""):
         resultOfSFX = cur.fetchall()
         for row in resultOfSFX:
             parsedInterval = extractInterval(row[1])
-            try:
-                stmt = "UPDATE sfx set Threshold = '" + parsedInterval + "' where id = " + str(row[0])
-                if debug:
-                    print (stmt)
-                cur.execute(stmt)
-                if toCommit:
-                    conn.commit()
-            except Exception as err:
-                conn.rollback()
-                logger.info('Update Threshold error.')
-                logger.error(err)
-                continue
+            if parsedInterval is not "":
+                try:
+                    stmt = "UPDATE sfx set Threshold = '" + parsedInterval + "' where id = " + str(row[0])
+                    if debug:
+                        print (stmt)
+                    cur.execute(stmt)
+                    if toCommit:
+                        conn.commit()
+                except Exception as err:
+                    conn.rollback()
+                    logger.info('Update Threshold error.')
+                    logger.error(err)
+                    continue
     except Exception as err:
         logger.info('Get Threshold error.')
         logger.error(err)
@@ -89,10 +90,6 @@ def main(sfxFileName="", themeFileName="", departFileName="", year=""):
         logger.info('Get ISBN error.')
         logger.error(err)
         return
-
-    # 若要更新Department(寫入未在table內的) writeDepartment (此程式尚未完成)
-    # if departFileName is not "" and not None:
-    #     writeDepartment(departFileName)
 
     # 建立Theme與Depart的relation relate_Theme_Depart
     if themeFileName is not "" and not None:

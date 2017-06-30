@@ -9,7 +9,7 @@ import logging.config
 """ 查資料庫中存不存在，不存在就往後加上去，要對應到院 """
 
 debug = 1
-logging.config.fileConfig("../logger.conf")
+logging.config.fileConfig("../python/logger.conf")
 logger = logging.getLogger("root")
 try:
     conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
