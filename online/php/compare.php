@@ -15,12 +15,13 @@ if($_FILES["file"]["error"] > 0){
 	exec('python ../python/ClearData/clearData.py', $re);
 	$zip = new ZipArchive();
 	$ZIPfilename = "../result/Result-" . $_FILES["file"]["name"] . ".zip";
-	if ($res = $zip->open($ZIPfilename, ZipArchive::CREATE)!==TRUE) {
+	if ($res = $zip->open($ZIPfilename)) {
 		switch ($res) {
 			case ZipArchive::ER_EXISTS:
 				$zip->open($ZIPfilename, ZipArchive::OVERWRITE);
 				break;
 			default:
+				$zip->open($ZIPfilename, ZipArchive::CREATE);
 				break;
 		}
 	}

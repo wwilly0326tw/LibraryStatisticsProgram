@@ -7,12 +7,12 @@ import sys
 debug = 1
 
 def getView(view=0, batchID=0, year=""):
-    if sys.argv[1]:
-        view = sys.argv[1]
-    if sys.argv[2]:
-        batchID = sys.argv[2]
-    if sys.argv[3]:
-        year = sys.argv[3]
+    # if sys.argv[1]:
+    #     view = sys.argv[1]
+    # if sys.argv[2]:
+    #     batchID = sys.argv[2]
+    # if sys.argv[3]:
+    #     year = sys.argv[3]
     try:
         filename = ""
         if view == "1":
@@ -27,7 +27,7 @@ def getView(view=0, batchID=0, year=""):
             filename = "支援資料庫排序表(" + str(batchID) + "-Score).txt"
         elif view == "6":
             filename = "NMatchThemes.txt"
-        outputFile = open("../result/" + filename, 'w+', encoding='UTF-8')
+        outputFile = open("." + filename, 'w+', encoding='UTF-8')
     except Exception as err:
         print (err)
         sys.exit(-1)
@@ -68,7 +68,7 @@ def getView(view=0, batchID=0, year=""):
         outputFile.write('\t')
         outputFile.write("Count")
         outputFile.write('\n')
-        cur.execute("select name, count from `v_journal_support_target_rank(all)` where batchID = " + str(batchID) + " order by count desc")
+        cur.execute("select name, count from `v_journal_support_target_rank(all)` order by count desc")
         result = cur.fetchall()
     elif view == "5":
         outputFile.write("Target")
@@ -96,4 +96,4 @@ def getView(view=0, batchID=0, year=""):
     outputFile.close()
 
 if __name__ == '__main__':
-    getView(str(1), str(2))
+    getView(str(4), str(1))

@@ -1,5 +1,5 @@
 from openpyxl import load_workbook
-import Program.DBconfig as DBconfig
+import DBconfig as DBconfig
 import mysql.connector
 import sys
 
