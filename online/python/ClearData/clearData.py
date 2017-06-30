@@ -16,8 +16,8 @@ except Exception as err:
     sys.exit(-1)
 
 def clearData():
-    if checkThreadCount():
-        return
+    # if checkThreadCount():
+        # return
     try:
         cur.execute("Update target set score = 0")
         if toCommit:

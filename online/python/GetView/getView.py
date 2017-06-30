@@ -69,7 +69,7 @@ def getView(view=0, batchID=0, year=""):
         outputFile.write('\t')
         outputFile.write("Count")
         outputFile.write('\n')
-        cur.execute("select name, count from `v_journal_support_target_rank(all)` where batchID = " + str(batchID) + " order by count desc")
+        cur.execute("select name, count from `v_journal_support_target_rank(all)` order by count desc")
         result = cur.fetchall()
     elif view == "5":
         outputFile.write("Target")
@@ -97,4 +97,4 @@ def getView(view=0, batchID=0, year=""):
     outputFile.close()
 
 if __name__ == '__main__':
-    getView(str(1), str(2))
+    getView(str(1), str(4))
