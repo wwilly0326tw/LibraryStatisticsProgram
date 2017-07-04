@@ -160,7 +160,7 @@ def main(filename="testdata.xlsx", year=""):
                             targetNameStr += "\""
                             targetNameStr += targetName
                             targetNameStr += "\""
-                            targetNameStr += ","
+                            targetNameStr += ",  "
                         except Exception as err:
                             logger.info('Select TargetName from sfx error.')
                             logger.error(err)
@@ -186,7 +186,7 @@ def main(filename="testdata.xlsx", year=""):
                 if targetNameStr is not "":
                     try:
                         cur.execute(
-                            "SELECT tid from target where name in (" + targetNameStr[0: len(targetNameStr) - 1] + ")")
+                            "SELECT tid from target where name in (" + targetNameStr[0: -3] + ")")
                         resultOfTarget = cur.fetchall()
                         for target in resultOfTarget:
                             try:
@@ -371,7 +371,7 @@ def outputResult(sfxIDList, themeIDList, targetNameList):
     if targetNameList is not "":
         targetNameStr = ""
         try:
-            cur.execute("SELECT name from target where name in (" + targetNameList[0: len(targetNameList) - 1] + ")")
+            cur.execute("SELECT name from target where name in (" + targetNameList[0: -3] + ")")
             if debug:
                 print (targetNameList)
             resultOfTarget = cur.fetchall()
@@ -389,14 +389,14 @@ def outputResult(sfxIDList, themeIDList, targetNameList):
 
 
 def insertTargetScore(targetNameList, nSup):
-    targetNameList = targetNameList[0:-1].split(",")
+    targetNameList = targetNameList[0:-3].split(",  ")
     nSup = 1 / float(nSup)
     for target in targetNameList:
         try:
             sql = "Update target set score = score + " + str(nSup) + " where name = " + target
             if debug:
                 print (sql)
-            cur.execute("Update target set score = score + " + str(nSup) + "where name = " + target)
+            cur.execute(sql)
             conn.commit()
         except Exception as err:
             conn.rollback()
