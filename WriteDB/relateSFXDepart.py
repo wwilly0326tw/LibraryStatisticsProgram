@@ -28,4 +28,4 @@ def relate_SFX_Depart(year = ""):
         conn.rollback()
 
 if __name__ == '__main__':
-    relate_SFX_Depart()
+    relate_SFX_Depart(year="2018")

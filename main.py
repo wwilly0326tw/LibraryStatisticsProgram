@@ -418,5 +418,5 @@ def threadCounter(out):
         sys.exit(-1)
 
 if __name__ == '__main__':
-    main(filename="testdata.xlsx", year="2018")
+    main(filename="testdata2.xlsx", year="2017")
     # main()
