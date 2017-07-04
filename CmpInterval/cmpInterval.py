@@ -16,10 +16,19 @@ def cmpInterval(parsedInterval, refInterval):
             end = cell[cell.find('-') + 1: len(cell)]
             end = re.split('\.', end)
             # print(end)
-            if start[0] <= refInterval[0] <= end[0] or refInterval[0] is 0:
+            if start[0] < refInterval[0] < end[0] or refInterval[0] is 0:
+                return True
+            elif start[0] == refInterval[0] == end[0]:
                 if start[1] <= refInterval[1] <= end[1] or refInterval[1] is 0:
                     if start[2] <= refInterval[2] <= end[2] or refInterval[2] is 0:
-                        # print (cell)
+                        return True
+            elif end[0] == refInterval[0]:
+                if end[1] >= refInterval[1] or refInterval[1] is 0:
+                    if end[2] >= refInterval[2] or refInterval[2] is 0:
+                        return True
+            elif start[0] == refInterval[0]:
+                if start[1] <= refInterval[1] or refInterval[1] is 0:
+                    if start[2] <= refInterval[2] or refInterval[2] is 0:
                         return True
         elif cell.find('.') is not -1: # 比對Available in 的寫法
             start = re.split('\.', cell)
@@ -33,8 +42,8 @@ def cmpInterval(parsedInterval, refInterval):
     return False
 
 if __name__ == '__main__':
-    buyInter = "2007.24.1 2007.24.3-2007.24.5 2015.32.2 2015.32.4-2015.32.6"
-    ref = "2015.32.6"
+    buyInter = "1963.11.1-1964.12.2"
+    ref = "1963.11.4"
     if cmpInterval(buyInter, ref):
         print("Match")
     else:
