@@ -45,7 +45,7 @@ def main(sfxFileName="", themeFileName="", year="",  departFileName=""):
 
     # 將sfx的Threshold轉成結構化的資料 parseDate
     try:
-        cur.execute("SELECT id, Threshold from sfx where year = " + year)
+        cur.execute("SELECT id, Threshold from sfx where year = " + year + " and Threshold is not null")
         resultOfSFX = cur.fetchall()
         for row in resultOfSFX:
             parsedInterval = extractInterval(row[1])
