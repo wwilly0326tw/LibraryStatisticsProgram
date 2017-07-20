@@ -25,8 +25,8 @@ def cmpISSNISBN(ISSN="", ISBN="", year=""):
         if ISSN.find(";") is not -1:
             ISSNstr = split(ISSN=ISSN)
         try:
-            stmt = "SELECT id from sfx where year = " + str(
-                year) + " and ISSN in ('" + ISSNstr + "') or eISSN in ('" + ISSNstr + "')"
+            stmt = "SELECT ID FROM (SELECT id, year, ISSN, eISSN from sfx where " \
+                   "ISSN in ('" + ISSNstr + "') or eISSN in ('" + ISSNstr + "')) AS A WHERE A.year = " + str(year)
             if debug:
                 print (stmt)
             cur.execute(stmt)
@@ -39,7 +39,8 @@ def cmpISSNISBN(ISSN="", ISBN="", year=""):
         if ISBN.find(";") is not -1:
             ISBNstr = split(ISBN=ISBN)
         try:
-            stmt = "SELECT id from sfx where ISBN in ('" + ISBNstr + "') or eISBN in ('" + ISBNstr + "') and year = " + str(year)
+            stmt = "SELECT ID FROM (SELECT id, year, ISSN, eISSN from sfx where " \
+                   "ISBN in ('" + ISBNstr + "') or eISBN in ('" + ISBNstr + "')) AS A WHERE A.year = " + str(year)
             if debug:
                 print(stmt)
             cur.execute(stmt)
@@ -76,4 +77,4 @@ def traceback(err):
 if __name__ == '__main__':
     logging.config.fileConfig("../logger.conf")
     logger = logging.getLogger("root")
-    cmpISSNISBN(ISSN="0000-0005;0000-0019;0512-1175;0513-1715")
+    cmpISSNISBN(ISSN="00189340", year="2016")

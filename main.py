@@ -124,7 +124,9 @@ def main(filename="testdata.xlsx", year=""):
                         logger.error(err)
                         continue
                     # 若ISBN有值 代表此次比較是以ISBN為基準，不需要比對區間
-                    print (sfxID)
+                    if debug:
+                        print ("SFX List")
+                        print (sfxID)
                     if ISBN is not "" or cmpInterval(threshold, str(YVI[0]) + "." + str(YVI[1]) + "." + str(YVI[2])):
                         sfxIDstr += str(sfxID[0])
                         sfxIDstr += ","
@@ -419,5 +421,5 @@ def threadCounter(out):
         sys.exit(-1)
 
 if __name__ == '__main__':
-    main(filename="testdata.xlsx", year="2017")
+    main(filename="testdata.xlsx", year="2018")
     # main()
