@@ -51,10 +51,11 @@ def writeSFX2DB(filename="", year=""):
                 valStr += "\""
             valStr += ", "
         dbStr = row[5].value
-        if dbStr is not None and dbStr.find('free') is not -1 or dbStr.find('Free') is not -1 or dbStr.find('Open Access') is not -1:
-            valStr += "1"
-        else:
-            valStr += "0"
+        if dbStr is not None:
+            if dbStr.find('free') is not -1 or dbStr.find('Free') is not -1 or dbStr.find('Open Access') is not -1:
+                valStr += "1"
+            else:
+                valStr += "0"
         valStr += ", "
         valStr += str(year)
         valStr += ")"
@@ -71,21 +72,22 @@ def writeSFX2DB(filename="", year=""):
             continue
 
 def checkTargetinDB(target):
-    stmt = "Select count(*) from target  where name = \"" + target + "\""
-    try:
-        if debug:
-            print (stmt)
-        cur.execute(stmt)
-        exist = cur.fetchone()
-        if not exist[0]:
-            stmt = "Insert into target(name) values(\"" + target + "\")"
+    if target is not None:
+        stmt = "Select count(*) from target  where name = \"" + target + "\""
+        try:
             if debug:
                 print (stmt)
             cur.execute(stmt)
-    except Exception as err:
-        print (err)
-        logger.error(err)
-        conn.rollback()
+            exist = cur.fetchone()
+            if not exist[0]:
+                stmt = "Insert into target(name) values(\"" + target + "\")"
+                if debug:
+                    print (stmt)
+                cur.execute(stmt)
+        except Exception as err:
+            print (err)
+            logger.error(err)
+            conn.rollback()
 
 if __name__ == '__main__':
     writeSFX2DB('./testdata.xlsx', 2015)
