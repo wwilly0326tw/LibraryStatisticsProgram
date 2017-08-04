@@ -74,6 +74,8 @@ def main(sfxFileName="", themeFileName="", departFileName="", year=""):
         for row in resultOfSFX:
             ISBN = ISBN10to13(row[1])
             eISBN = ISBN10to13(row[2])
+            print(row[1])
+            print(ISBN)
             try:
                 stmt = "UPDATE sfx set ISBN = '" + ISBN + "', eISBN = '" + eISBN + "' where id = " + str(row[0])
                 if debug:
