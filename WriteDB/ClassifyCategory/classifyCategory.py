@@ -12,6 +12,8 @@ from time import gmtime, strftime
 logging.config.fileConfig("./logger.conf")
 logger = logging.getLogger("root")
 
+debug = 1
+
 try:
     conn = mysql.connector.connect(user=DBconfig.user, password=DBconfig.password, database=DBconfig.database,
                                    host=DBconfig.host)
