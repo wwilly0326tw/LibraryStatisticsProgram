@@ -3,7 +3,7 @@ if($_FILES["file"]["error"] > 0){
 	echo "Error:" . $_FILES["file"]["error"];
 } else{
 	set_time_limit(0);
-	$start = date("H:i:s");
+	$start = date("d/H:i:s");
 	echo "File Name : " . $_FILES["file"]["name"] . "<br/>";
 	move_uploaded_file($_FILES["file"]["tmp_name"], "../data/" . $_FILES["file"]["name"]);
 	exec('python ../python/main.py ' . $_FILES["file"]["name"] . ' ' . $_POST['year'], $ret);
@@ -34,13 +34,15 @@ if($_FILES["file"]["error"] > 0){
 	$zip->addFile("../result/" . $filename5[0]);
 	$zip->close();
 
-	$end = date("H:i:s");
+	$end = date("d/H:i:s");
 	$diff = strtotime($end) - strtotime($start); 
 	$h = floor($diff / 3600);
 	$diff = $diff % 3600;
 	$m = floor($diff / 60);
 	$s = $diff % 60;
-	echo "執行時間：" . $h . ":" . $m . ":" . $s . "<br>";
+	// echo "執行時間：" . $h . ":" . $m . ":" . $s . "<br>";
+	echo "開始時間：" . $start . "<br>";
+	echo "結束時間：" . $end . "<br>";
 	echo "<a href='download.php?file=Result-" . $_FILES["file"]["name"] . ".zip'>Result-". $_FILES["file"]["name"] . "</a><br>";
 }
 ?>
