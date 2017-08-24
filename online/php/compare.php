@@ -3,6 +3,7 @@ if($_FILES["file"]["error"] > 0){
 	echo "Error:" . $_FILES["file"]["error"];
 } else{
 	set_time_limit(0);
+	date_default_timezone_set("Asia/Taipei");
 	$start = date("d/H:i:s");
 	echo "File Name : " . $_FILES["file"]["name"] . "<br/>";
 	move_uploaded_file($_FILES["file"]["tmp_name"], "../data/" . $_FILES["file"]["name"]);
